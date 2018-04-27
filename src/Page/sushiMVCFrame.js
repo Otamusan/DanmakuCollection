@@ -135,7 +135,6 @@ class CField {
 	entityDrawingUpdate(i) {
 		this.model.entityDrawEvent.entityDrawing = this.entityList[i].getDrawing();
 		this.model.entityDrawEvent.entityDrawing = this.entityList[i].
-
 		document.dispatchEvent(this.model.entityDrawEvent);
 	}
 
