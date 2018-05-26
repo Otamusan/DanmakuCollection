@@ -12,7 +12,7 @@ Electron.app.on('ready', function () {
     width: 800,
     height: 600
   });
-  this.window.loadURL('file://' + __dirname + "/Page/index.html");
+  this.window.loadURL('file://' + __dirname + "/page/index.html");
   this.window.on('closed', function () {
     this.window = null;
   });

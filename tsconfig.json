@@ -1,0 +1,14 @@
+{
+  "buildOnSave": true,
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "sourceMap": true,
+    "types" : ["node"],
+    "outDir": "src/dist",
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
