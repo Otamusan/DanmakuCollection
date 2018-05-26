@@ -6,11 +6,12 @@ namespace Client {
             public client: Client;
             private parentScene: Scene;
             protected currentSubScene: Scene;
-            public particleManager
+            public particleManager: particleManager
 
             constructor(client: Client, parentScene?: Scene) {
                 this.client = client;
                 this.currentSubScene = null
+                this.particleManager = new particleManager(client.view);
                 if (parentScene == undefined) {
                     this.parentScene = null;
                 } else {
@@ -23,6 +24,7 @@ namespace Client {
                     this.currentSubScene.onUpdate();
                     return;
                 }
+                this.particleManager.onUpdate();
                 this.onUpdate();
             }
             //オーバーライド用
@@ -68,53 +70,153 @@ namespace Client {
             }
 
             onUpdate() {
+                let particle = new Particle.Particle(
+                    new Util.Color(0, 0, 0),
+                    new Util.Coord(0.1, 0.1),
+                    new Util.Coord(40, 40),
+                    10,
+                    50,
+                    [Particle.PFuncs.ACCELERATE1_1],
+                    new Shape.ShapeCircle()
+                )
+                this.particleManager.spawnParticle(particle);
             }
         }
     }
     //画面でチラチラ動くやつ
     export namespace Particle {
+        //パーティクルの機能部分(Bridgeパターン)
+        //基本的にパーティクルの機能の種類ごとに実体化する
+        export abstract class PFunc {
+            public onUpdate(particle: Particle) { }
+        }
+
+        export class PFuncAccelerate extends PFunc {
+            private acc: number
+            constructor(acc: number) {
+                super();
+                this.acc = acc;
+            }
+            public onUpdate(particle: Particle) {
+                let newvector = new Util.Coord(particle.getVector().x * this.acc, particle.getVector().y * this.acc);
+                particle.setVector(newvector);
+            }
+        }
+
+        export class PFuncs {
+            public static ACCELERATE1_1: PFunc = new PFuncAccelerate(1.1);
+        }
+
+        //パーティクルの実装部分(Bridgeパターン)
         export class Particle {
-            public color: Util.Color;
-            public shape: Shape.Shape;
-            constructor(color: Util.Color, shape: Shape.Shape) {
+            private color: Util.Color; //パーティクルの色
+            private vector: Util.Coord; //パーティクルの座標
+            private coord: Util.Coord; //パーティクルの速度ベクトル
+            private size: number; //パーティクルの大きさ
+            private time: number; //パーティクルが生成されてから経った時間（tick）
+            private remain: number; //パーティクルが残留する時間(tick)
+            private isDead: boolean;
+            private pFuncList: Array<PFunc>; //パーティクルが持つ機能
+            private shape: Shape.Shape; //パーティクルの形
+            constructor(color: Util.Color, vector: Util.Coord, coord: Util.Coord, size: number, remain: number, list: Array<PFunc>, shape: Shape.Shape) {
+                this.color = color;
+                this.vector = vector;
+                this.coord = coord;
+                this.size = size;
+                this.remain = remain;
                 this.shape = shape;
+                this.pFuncList = list;
+                this.time = 0
+            }
+            public onUpdate() {
+                this.pFuncList.forEach((pfunc: PFunc) => {
+                    pfunc.onUpdate(this);
+                });
+                this.time++;
+                this.coord.addCoord(this.vector);
+                if (this.time >= this.remain) {
+                    this.setDead();
+                }
+            }
+            public setDead() {
+                this.isDead = true;
+            }
+
+            public isParticleDead(): boolean {
+                return this.isDead;
+            }
+            public getColor(): Util.Color {
+                return this.color;
+            }
+            public setColor(color: Util.Color) {
                 this.color = color;
             }
+            public getVector(): Util.Coord {
+                return this.vector;
+            }
+            public setVector(vector: Util.Coord) {
+                this.vector = vector;
+            }
+            public getCoord(): Util.Coord {
+                return this.coord;
+            }
+            public setCoord(coord: Util.Coord) {
+                this.coord = coord;
+            }
+            public getSize(): number {
+                return this.size;
+            }
+            public setSize(size: number) {
+                this.size = size;
+            }
+            public getRemain(): number {
+                return this.remain;
+            }
+            public getTime(): number {
+                return this.time;
+            }
+            public getShape(): Shape.Shape {
+                return this.shape;
+            }
+        }
+    }
+    export class particleManager {
+        private particleList: Array<Particle.Particle>;
+        private view: View;
+        constructor(view: View) {
+            this.particleList = new Array<Particle.Particle>();
+            this.view = view;
+        }
+
+        public onUpdate() {
+            this.particleList.forEach((particle: Particle.Particle, index: number) => {
+                particle.onUpdate();
+                particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.view);
+                if (particle.isParticleDead()) {
+                    this.particleList.splice(index, 0);
+                }
+            });
+        }
+
+        public spawnParticle(particle: Particle.Particle) {
+            this.particleList.push(particle);
         }
     }
     //画面に描画する形状
     export namespace Shape {
         export abstract class Shape {
             //描画時の処理
-            public draw(coord: Util.Coord, color: Util.Color, view: View) { };
+            public draw(coord: Util.Coord, color: Util.Color, size: number, view: View) { };
         }
         export class ShapeCircle extends Shape {
-            private radious: number
-            constructor(radious: number) {
-                super();
-                this.radious = radious;
-            }
-            public draw(coord: Util.Coord, color: Util.Color, view: View) {
+            public draw(coord: Util.Coord, color: Util.Color, size: number, view: View) {
                 view.getctx().beginPath()
                 view.getctx().fillStyle = color.getString();
-                view.getctx().arc(coord.x, coord.y, this.radious, 0, 2 * Math.PI);
+                view.getctx().arc(coord.x, coord.y, size, 0, 2 * Math.PI);
                 view.getctx().fill();
             }
         }
     }
-
-
-
-    export class particleManager {
-        public List()
-        constructor() {
-
-        }
-
-
-    }
-
-
 
     //クライアント系の処理を総括で管理
     export class Client {
@@ -408,12 +510,37 @@ namespace Util {
             this.y = y;
         }
 
-        public getDistance(otherCoord: Coord) {
+        public getDistance(otherCoord: Coord): number {
             return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
         }
 
-        public isEqual(other: Coord) {
+        public isEqual(other: Coord): boolean {
             return other.x == this.x && other.y == this.y;
+        }
+
+        public copy(): Coord {
+            return new Coord(this.x, this.y);
+        }
+
+        public addCoord(other: Coord) {
+            this.x += other.x;
+            this.y += other.y;
+        }
+
+        public addUp(n: number) {
+            this.y -= n
+        }
+
+        public addDown(n: number) {
+            this.y += n
+        }
+
+        public addRight(n: number) {
+            this.x += n
+        }
+
+        public addLeft(n: number) {
+            this.x -= n
         }
     }
 }

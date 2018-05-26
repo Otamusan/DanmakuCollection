@@ -7,6 +7,7 @@ var Client;
             constructor(client, parentScene) {
                 this.client = client;
                 this.currentSubScene = null;
+                this.particleManager = new particleManager(client.view);
                 if (parentScene == undefined) {
                     this.parentScene = null;
                 }
@@ -19,6 +20,7 @@ var Client;
                     this.currentSubScene.onUpdate();
                     return;
                 }
+                this.particleManager.onUpdate();
                 this.onUpdate();
             }
             //オーバーライド用
@@ -56,6 +58,8 @@ var Client;
                 super(client);
             }
             onUpdate() {
+                let particle = new Particle.Particle(new Util.Color(0, 0, 0), new Util.Coord(0.1, 0.1), new Util.Coord(40, 40), 10, 50, [Particle.PFuncs.ACCELERATE1_1], new Shape.ShapeCircle());
+                this.particleManager.spawnParticle(particle);
             }
         }
         Scene_1.SceneSelect = SceneSelect;
@@ -63,42 +67,129 @@ var Client;
     //画面でチラチラ動くやつ
     let Particle;
     (function (Particle_1) {
+        //パーティクルの機能部分(Bridgeパターン)
+        //基本的にパーティクルの機能の種類ごとに実体化する
+        class PFunc {
+            onUpdate(particle) { }
+        }
+        Particle_1.PFunc = PFunc;
+        class PFuncAccelerate extends PFunc {
+            constructor(acc) {
+                super();
+                this.acc = acc;
+            }
+            onUpdate(particle) {
+                let newvector = new Util.Coord(particle.getVector().x * this.acc, particle.getVector().y * this.acc);
+                particle.setVector(newvector);
+            }
+        }
+        Particle_1.PFuncAccelerate = PFuncAccelerate;
+        class PFuncs {
+        }
+        PFuncs.ACCELERATE1_1 = new PFuncAccelerate(1.1);
+        Particle_1.PFuncs = PFuncs;
+        //パーティクルの実装部分(Bridgeパターン)
         class Particle {
-            constructor(color, shape) {
-                this.shape = shape;
+            constructor(color, vector, coord, size, remain, list, shape) {
                 this.color = color;
+                this.vector = vector;
+                this.coord = coord;
+                this.size = size;
+                this.remain = remain;
+                this.shape = shape;
+                this.pFuncList = list;
+                this.time = 0;
+            }
+            onUpdate() {
+                this.pFuncList.forEach((pfunc) => {
+                    pfunc.onUpdate(this);
+                });
+                this.time++;
+                this.coord.addCoord(this.vector);
+                if (this.time >= this.remain) {
+                    this.setDead();
+                }
+            }
+            setDead() {
+                this.isDead = true;
+            }
+            isParticleDead() {
+                return this.isDead;
+            }
+            getColor() {
+                return this.color;
+            }
+            setColor(color) {
+                this.color = color;
+            }
+            getVector() {
+                return this.vector;
+            }
+            setVector(vector) {
+                this.vector = vector;
+            }
+            getCoord() {
+                return this.coord;
+            }
+            setCoord(coord) {
+                this.coord = coord;
+            }
+            getSize() {
+                return this.size;
+            }
+            setSize(size) {
+                this.size = size;
+            }
+            getRemain() {
+                return this.remain;
+            }
+            getTime() {
+                return this.time;
+            }
+            getShape() {
+                return this.shape;
             }
         }
         Particle_1.Particle = Particle;
     })(Particle = Client_1.Particle || (Client_1.Particle = {}));
+    class particleManager {
+        constructor(view) {
+            this.particleList = new Array();
+            this.view = view;
+        }
+        onUpdate() {
+            this.particleList.forEach((particle, index) => {
+                particle.onUpdate();
+                particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.view);
+                if (particle.isParticleDead()) {
+                    this.particleList.splice(index, 0);
+                }
+            });
+        }
+        spawnParticle(particle) {
+            this.particleList.push(particle);
+        }
+    }
+    Client_1.particleManager = particleManager;
     //画面に描画する形状
     let Shape;
     (function (Shape_1) {
         class Shape {
             //描画時の処理
-            draw(coord, color, view) { }
+            draw(coord, color, size, view) { }
             ;
         }
         Shape_1.Shape = Shape;
         class ShapeCircle extends Shape {
-            constructor(radious) {
-                super();
-                this.radious = radious;
-            }
-            draw(coord, color, view) {
+            draw(coord, color, size, view) {
                 view.getctx().beginPath();
                 view.getctx().fillStyle = color.getString();
-                view.getctx().arc(coord.x, coord.y, this.radious, 0, 2 * Math.PI);
+                view.getctx().arc(coord.x, coord.y, size, 0, 2 * Math.PI);
                 view.getctx().fill();
             }
         }
         Shape_1.ShapeCircle = ShapeCircle;
     })(Shape = Client_1.Shape || (Client_1.Shape = {}));
-    class particleManager {
-        constructor() {
-        }
-    }
-    Client_1.particleManager = particleManager;
     //クライアント系の処理を総括で管理
     class Client {
         constructor(document) {
@@ -362,6 +453,25 @@ var Util;
         }
         isEqual(other) {
             return other.x == this.x && other.y == this.y;
+        }
+        copy() {
+            return new Coord(this.x, this.y);
+        }
+        addCoord(other) {
+            this.x += other.x;
+            this.y += other.y;
+        }
+        addUp(n) {
+            this.y -= n;
+        }
+        addDown(n) {
+            this.y += n;
+        }
+        addRight(n) {
+            this.x += n;
+        }
+        addLeft(n) {
+            this.x -= n;
         }
     }
     Util.Coord = Coord;
