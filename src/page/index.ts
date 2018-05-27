@@ -1,17 +1,18 @@
 namespace Client {
     //タイトル画面やゲーム画面、セレクト画面、メニュー画面などの管理
 
+
     export namespace Scene {
         export class Scene {
             public client: Client;
             private parentScene: Scene;
             protected currentSubScene: Scene;
-            public particleManager: particleManager
+            public particleManager: ParticleManager;
 
             constructor(client: Client, parentScene?: Scene) {
                 this.client = client;
                 this.currentSubScene = null
-                this.particleManager = new particleManager(client.view);
+                this.particleManager = new ParticleManager(client.view);
                 if (parentScene == undefined) {
                     this.parentScene = null;
                 } else {
@@ -24,6 +25,7 @@ namespace Client {
                     this.currentSubScene.onUpdate();
                     return;
                 }
+                this.client.view.drawBackGround(new Util.Color(0, 0, 0));
                 this.particleManager.onUpdate();
                 this.onUpdate();
             }
@@ -70,13 +72,15 @@ namespace Client {
             }
 
             onUpdate() {
+                if(!this.getMouse().isMousePressed(0))return;
+
                 let particle = new Particle.Particle(
-                    new Util.Color(0, 0, 0),
-                    new Util.Coord(0.1, 0.1),
-                    new Util.Coord(40, 40),
-                    10,
-                    50,
-                    [Particle.PFuncs.ACCELERATE1_1],
+                    new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()),
+                    Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 10),
+                    this.getMouse().getCoord().copy(),
+                    20,
+                    100,
+                    [Particle.PFuncs.GRAVITY,Particle.PFuncs.SHRINK, Particle.PFuncs.DECELERATION1_1],
                     new Shape.ShapeCircle()
                 )
                 this.particleManager.spawnParticle(particle);
@@ -103,8 +107,28 @@ namespace Client {
             }
         }
 
+        export class PFuncGravity extends PFunc {
+            onUpdate(particle: Particle.Particle) {
+                particle.getVector().addDown(0.1);
+            }
+        }
+
+        export class PFuncShrink extends PFunc {
+            onUpdate(particle: Particle.Particle) {
+                let newsize = particle.getSize() - (particle.getSize()/(particle.getRemain() - particle.getTime()));
+                particle.setSize(newsize)
+            }
+        }
+
         export class PFuncs {
+            //1.1倍に加速
             public static ACCELERATE1_1: PFunc = new PFuncAccelerate(1.1);
+
+            public static DECELERATION1_1: PFunc = new PFuncAccelerate(0.9);
+            //下に向かって加速
+            public static GRAVITY: PFunc = new PFuncGravity();
+            //時間が経つと小さくなる
+            public static SHRINK: PFunc = new PFuncShrink();
         }
 
         //パーティクルの実装部分(Bridgeパターン)
@@ -180,7 +204,7 @@ namespace Client {
             }
         }
     }
-    export class particleManager {
+    export class ParticleManager {
         private particleList: Array<Particle.Particle>;
         private view: View;
         constructor(view: View) {
@@ -193,7 +217,7 @@ namespace Client {
                 particle.onUpdate();
                 particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.view);
                 if (particle.isParticleDead()) {
-                    this.particleList.splice(index, 0);
+                    this.particleList.splice(index, 1);
                 }
             });
         }
@@ -282,9 +306,9 @@ namespace Client {
         public static RIGHT_BUTTON = 2;
         private buttonAmount = 3
 
-        private mouseCoord: Util.Coord;
-        private currentCoord: Util.Coord;
-        private previousCoord: Util.Coord;
+        private mouseCoord: Util.Coord = new Util.Coord(0, 0);
+        private currentCoord: Util.Coord = new Util.Coord(0, 0);
+        private previousCoord: Util.Coord = new Util.Coord(0, 0);
 
         constructor() {
             this.isPressed = new Array<boolean>(this.buttonAmount);
@@ -361,8 +385,11 @@ namespace Client {
 
         constructor(document: Document) {
             this.document = document;
-            this.height = this.document.documentElement.clientHeight;
-            this.width = this.document.documentElement.clientWidth;
+            //this.height = this.document.documentElement.clientHeight;
+            //this.width = this.document.documentElement.clientWidth;
+            this.height = window.innerHeight
+            this.width = window.innerWidth
+
             //this.canvas = Util.DOMHandler.createElement('canvas', {
             //    height: this.height,
             //    width: this.width
@@ -380,6 +407,10 @@ namespace Client {
             this.document.body.style.margin = "0";
             this.document.body.style.overflow = "hidden"
             this.document.body.appendChild(this.canvas);
+        }
+        public drawBackGround(color: Util.Color) {
+            this.getctx().fillStyle = color.getString();
+            this.getctx().fillRect(0, 0, this.width, this.height)
         }
         public getctx(): CanvasRenderingContext2D {
             return this.canvas.getContext('2d');
@@ -485,7 +516,15 @@ namespace Util {
         }
 
         public getString(): string {
-            return "#" + this.r.toString(16) + this.g.toString(16) + this.b.toString(16);
+            let r = Math.floor(this.r).toString(16)
+            let g = Math.floor(this.g).toString(16)
+            let b = Math.floor(this.b).toString(16)
+            if (r.length == 1) { r = "0" + r }
+            if (g.length == 1) { g = "0" + g }
+            if (b.length == 1) { b = "0" + b }
+
+
+            return "#" + r + g + b;
         }
 
         public getR() {
@@ -508,6 +547,12 @@ namespace Util {
         constructor(x: number, y: number) {
             this.x = x;
             this.y = y;
+        }
+
+        public static createFromRadian(rad: number, length: number): Coord {
+            let x = Math.cos(rad) * length;
+            let y = Math.sin(rad) * length;
+            return new Coord(x, y);
         }
 
         public getDistance(otherCoord: Coord): number {

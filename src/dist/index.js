@@ -7,7 +7,7 @@ var Client;
             constructor(client, parentScene) {
                 this.client = client;
                 this.currentSubScene = null;
-                this.particleManager = new particleManager(client.view);
+                this.particleManager = new ParticleManager(client.view);
                 if (parentScene == undefined) {
                     this.parentScene = null;
                 }
@@ -20,6 +20,7 @@ var Client;
                     this.currentSubScene.onUpdate();
                     return;
                 }
+                this.client.view.drawBackGround(new Util.Color(0, 0, 0));
                 this.particleManager.onUpdate();
                 this.onUpdate();
             }
@@ -58,7 +59,9 @@ var Client;
                 super(client);
             }
             onUpdate() {
-                let particle = new Particle.Particle(new Util.Color(0, 0, 0), new Util.Coord(0.1, 0.1), new Util.Coord(40, 40), 10, 50, [Particle.PFuncs.ACCELERATE1_1], new Shape.ShapeCircle());
+                if (!this.getMouse().isMousePressed(0))
+                    return;
+                let particle = new Particle.Particle(new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()), Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 10), this.getMouse().getCoord().copy(), 20, 100, [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.DECELERATION1_1], new Shape.ShapeCircle());
                 this.particleManager.spawnParticle(particle);
             }
         }
@@ -84,9 +87,28 @@ var Client;
             }
         }
         Particle_1.PFuncAccelerate = PFuncAccelerate;
+        class PFuncGravity extends PFunc {
+            onUpdate(particle) {
+                particle.getVector().addDown(0.1);
+            }
+        }
+        Particle_1.PFuncGravity = PFuncGravity;
+        class PFuncShrink extends PFunc {
+            onUpdate(particle) {
+                let newsize = particle.getSize() - (particle.getSize() / (particle.getRemain() - particle.getTime()));
+                particle.setSize(newsize);
+            }
+        }
+        Particle_1.PFuncShrink = PFuncShrink;
         class PFuncs {
         }
+        //1.1倍に加速
         PFuncs.ACCELERATE1_1 = new PFuncAccelerate(1.1);
+        PFuncs.DECELERATION1_1 = new PFuncAccelerate(0.9);
+        //下に向かって加速
+        PFuncs.GRAVITY = new PFuncGravity();
+        //時間が経つと小さくなる
+        PFuncs.SHRINK = new PFuncShrink();
         Particle_1.PFuncs = PFuncs;
         //パーティクルの実装部分(Bridgeパターン)
         class Particle {
@@ -152,7 +174,7 @@ var Client;
         }
         Particle_1.Particle = Particle;
     })(Particle = Client_1.Particle || (Client_1.Particle = {}));
-    class particleManager {
+    class ParticleManager {
         constructor(view) {
             this.particleList = new Array();
             this.view = view;
@@ -162,7 +184,7 @@ var Client;
                 particle.onUpdate();
                 particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.view);
                 if (particle.isParticleDead()) {
-                    this.particleList.splice(index, 0);
+                    this.particleList.splice(index, 1);
                 }
             });
         }
@@ -170,7 +192,7 @@ var Client;
             this.particleList.push(particle);
         }
     }
-    Client_1.particleManager = particleManager;
+    Client_1.ParticleManager = ParticleManager;
     //画面に描画する形状
     let Shape;
     (function (Shape_1) {
@@ -239,6 +261,9 @@ var Client;
     class MouseState {
         constructor() {
             this.buttonAmount = 3;
+            this.mouseCoord = new Util.Coord(0, 0);
+            this.currentCoord = new Util.Coord(0, 0);
+            this.previousCoord = new Util.Coord(0, 0);
             this.onMouseDown = (event) => {
                 this.isPressed[event.button] = true;
             };
@@ -299,8 +324,10 @@ var Client;
     class View {
         constructor(document) {
             this.document = document;
-            this.height = this.document.documentElement.clientHeight;
-            this.width = this.document.documentElement.clientWidth;
+            //this.height = this.document.documentElement.clientHeight;
+            //this.width = this.document.documentElement.clientWidth;
+            this.height = window.innerHeight;
+            this.width = window.innerWidth;
             //this.canvas = Util.DOMHandler.createElement('canvas', {
             //    height: this.height,
             //    width: this.width
@@ -315,6 +342,10 @@ var Client;
             this.document.body.style.margin = "0";
             this.document.body.style.overflow = "hidden";
             this.document.body.appendChild(this.canvas);
+        }
+        drawBackGround(color) {
+            this.getctx().fillStyle = color.getString();
+            this.getctx().fillRect(0, 0, this.width, this.height);
         }
         getctx() {
             return this.canvas.getContext('2d');
@@ -430,7 +461,19 @@ var Util;
             return new Color(r, g, b);
         }
         getString() {
-            return "#" + this.r.toString(16) + this.g.toString(16) + this.b.toString(16);
+            let r = Math.floor(this.r).toString(16);
+            let g = Math.floor(this.g).toString(16);
+            let b = Math.floor(this.b).toString(16);
+            if (r.length == 1) {
+                r = "0" + r;
+            }
+            if (g.length == 1) {
+                g = "0" + g;
+            }
+            if (b.length == 1) {
+                b = "0" + b;
+            }
+            return "#" + r + g + b;
         }
         getR() {
             return this.r;
@@ -447,6 +490,11 @@ var Util;
         constructor(x, y) {
             this.x = x;
             this.y = y;
+        }
+        static createFromRadian(rad, length) {
+            let x = Math.cos(rad) * length;
+            let y = Math.sin(rad) * length;
+            return new Coord(x, y);
         }
         getDistance(otherCoord) {
             return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
