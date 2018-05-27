@@ -1,6 +1,23 @@
 namespace Client {
     //タイトル画面やゲーム画面、セレクト画面、メニュー画面などの管理
+    export class SoundEffect{
+        private audio : HTMLAudioElement;
+        constructor(source : string){
+            this.audio = new Audio(source);
+        }
 
+        public play(){
+            this.audio.play();
+        }
+
+        public setVolume(volume : number){
+            this.audio.volume = volume;
+        }
+
+        public getVolume() : number{
+            return this.audio.volume;
+        }
+    }
 
     export namespace Scene {
         export class Scene {
@@ -73,7 +90,8 @@ namespace Client {
 
             onUpdate() {
                 if(!this.getMouse().isMousePressed(0))return;
-
+                var sound = new SoundEffect("asset/sound/kann.wav");
+                sound.play();
                 let particle = new Particle.Particle(
                     new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()),
                     Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 10),

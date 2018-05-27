@@ -1,6 +1,21 @@
 var Client;
 (function (Client_1) {
     //タイトル画面やゲーム画面、セレクト画面、メニュー画面などの管理
+    class SoundEffect {
+        constructor(source) {
+            this.audio = new Audio(source);
+        }
+        play() {
+            this.audio.play();
+        }
+        setVolume(volume) {
+            this.audio.volume = volume;
+        }
+        getVolume() {
+            return this.audio.volume;
+        }
+    }
+    Client_1.SoundEffect = SoundEffect;
     let Scene;
     (function (Scene_1) {
         class Scene {
@@ -61,6 +76,8 @@ var Client;
             onUpdate() {
                 if (!this.getMouse().isMousePressed(0))
                     return;
+                var sound = new SoundEffect("asset/sound/kann.wav");
+                sound.play();
                 let particle = new Particle.Particle(new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()), Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 10), this.getMouse().getCoord().copy(), 20, 100, [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.DECELERATION1_1], new Shape.ShapeCircle());
                 this.particleManager.spawnParticle(particle);
             }
