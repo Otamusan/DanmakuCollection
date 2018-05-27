@@ -22,7 +22,6 @@ var Client;
             constructor(client, parentScene) {
                 this.client = client;
                 this.currentSubScene = null;
-                this.particleManager = new ParticleManager(client.view);
                 if (parentScene == undefined) {
                     this.parentScene = null;
                 }
@@ -35,15 +34,10 @@ var Client;
                     this.currentSubScene.onUpdate();
                     return;
                 }
-                this.client.view.drawBackGround(new Util.Color(0, 0, 0));
-                this.particleManager.onUpdate();
                 this.onUpdate();
             }
             //オーバーライド用
             onUpdate() {
-            }
-            getView() {
-                return this.client.view;
             }
             getMouse() {
                 return this.client.controller.getMouseState();
@@ -74,12 +68,6 @@ var Client;
                 super(client);
             }
             onUpdate() {
-                if (!this.getMouse().isMousePressed(0))
-                    return;
-                var sound = new SoundEffect("asset/sound/kann.wav");
-                sound.play();
-                let particle = new Particle.Particle(new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()), Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 10), this.getMouse().getCoord().copy(), 20, 100, [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.DECELERATION1_1], new Shape.ShapeCircle());
-                this.particleManager.spawnParticle(particle);
             }
         }
         Scene_1.SceneSelect = SceneSelect;
@@ -192,14 +180,14 @@ var Client;
         Particle_1.Particle = Particle;
     })(Particle = Client_1.Particle || (Client_1.Particle = {}));
     class ParticleManager {
-        constructor(view) {
+        constructor(ctx) {
             this.particleList = new Array();
-            this.view = view;
+            this.ctx = ctx;
         }
         onUpdate() {
             this.particleList.forEach((particle, index) => {
                 particle.onUpdate();
-                particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.view);
+                particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.ctx);
                 if (particle.isParticleDead()) {
                     this.particleList.splice(index, 1);
                 }
@@ -215,16 +203,16 @@ var Client;
     (function (Shape_1) {
         class Shape {
             //描画時の処理
-            draw(coord, color, size, view) { }
+            draw(coord, color, size, ctx) { }
             ;
         }
         Shape_1.Shape = Shape;
         class ShapeCircle extends Shape {
-            draw(coord, color, size, view) {
-                view.getctx().beginPath();
-                view.getctx().fillStyle = color.getString();
-                view.getctx().arc(coord.x, coord.y, size, 0, 2 * Math.PI);
-                view.getctx().fill();
+            draw(coord, color, size, ctx) {
+                ctx.beginPath();
+                ctx.fillStyle = color.getString();
+                ctx.arc(coord.x, coord.y, size, 0, 2 * Math.PI);
+                ctx.fill();
             }
         }
         Shape_1.ShapeCircle = ShapeCircle;
@@ -233,12 +221,10 @@ var Client;
     class Client {
         constructor(document) {
             this.onUpdate = () => {
-                this.view.onUpdate();
                 this.controller.onUpdate();
                 this.rootScene.onSystemUpdate();
             };
             this.document = document;
-            this.view = new View(this.document);
             this.controller = new Controller(this.document);
             this.rootScene = new Scene.Scene(this);
         }
@@ -338,49 +324,51 @@ var Client;
     KeyState.RIGHT = 39;
     Client_1.KeyState = KeyState;
     //出力（描画）関連
-    class View {
-        constructor(document) {
+    /*export class View {
+        private height: number;
+        private width: number;
+        private canvas: any;
+        private document: Document
+
+        constructor(document: Document) {
             this.document = document;
-            //this.height = this.document.documentElement.clientHeight;
-            //this.width = this.document.documentElement.clientWidth;
             this.height = window.innerHeight;
             this.width = window.innerWidth;
-            //this.canvas = Util.DOMHandler.createElement('canvas', {
-            //    height: this.height,
-            //    width: this.width
-            //});
+
             this.canvas = document.createElement("canvas");
             this.canvas.height = this.height;
             this.canvas.width = this.width;
+
             this.displayCanvas();
         }
+
         //canvasの表示
-        displayCanvas() {
+        public displayCanvas() {
             this.document.body.style.margin = "0";
-            this.document.body.style.overflow = "hidden";
+            this.document.body.style.overflow = "hidden"
             this.document.body.appendChild(this.canvas);
         }
-        drawBackGround(color) {
+        public drawBackGround(color: Util.Color) {
             this.getctx().fillStyle = color.getString();
-            this.getctx().fillRect(0, 0, this.width, this.height);
+            this.getctx().fillRect(0, 0, this.width, this.height)
         }
-        getctx() {
+        public getctx(): CanvasRenderingContext2D {
             return this.canvas.getContext('2d');
         }
-        getGL() {
+        public getGL(): WebGLRenderingContext {
             return this.canvas.getContext("webgl");
         }
         //webGLの初期化
-        WebGLinit() {
+        public WebGLinit() {
             this.getGL().clearColor(0.0, 0.0, 0.0, 1.0);
             this.getGL().enable(this.getGL().DEPTH_TEST);
             this.getGL().depthFunc(this.getGL().LEQUAL);
             this.getGL().clear(this.getGL().COLOR_BUFFER_BIT | this.getGL().DEPTH_BUFFER_BIT);
         }
-        onUpdate() {
+        public onUpdate() {
+
         }
-    }
-    Client_1.View = View;
+    }*/
 })(Client || (Client = {}));
 var Util;
 (function (Util) {

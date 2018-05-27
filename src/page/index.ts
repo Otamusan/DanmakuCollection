@@ -24,12 +24,9 @@ namespace Client {
             public client: Client;
             private parentScene: Scene;
             protected currentSubScene: Scene;
-            public particleManager: ParticleManager;
-
             constructor(client: Client, parentScene?: Scene) {
                 this.client = client;
                 this.currentSubScene = null
-                this.particleManager = new ParticleManager(client.view);
                 if (parentScene == undefined) {
                     this.parentScene = null;
                 } else {
@@ -42,17 +39,11 @@ namespace Client {
                     this.currentSubScene.onUpdate();
                     return;
                 }
-                this.client.view.drawBackGround(new Util.Color(0, 0, 0));
-                this.particleManager.onUpdate();
                 this.onUpdate();
             }
             //オーバーライド用
             public onUpdate() {
 
-            }
-
-            public getView(): View {
-                return this.client.view;
             }
 
             public getMouse(): MouseState {
@@ -89,19 +80,6 @@ namespace Client {
             }
 
             onUpdate() {
-                if(!this.getMouse().isMousePressed(0))return;
-                var sound = new SoundEffect("asset/sound/kann.wav");
-                sound.play();
-                let particle = new Particle.Particle(
-                    new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()),
-                    Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 10),
-                    this.getMouse().getCoord().copy(),
-                    20,
-                    100,
-                    [Particle.PFuncs.GRAVITY,Particle.PFuncs.SHRINK, Particle.PFuncs.DECELERATION1_1],
-                    new Shape.ShapeCircle()
-                )
-                this.particleManager.spawnParticle(particle);
             }
         }
     }
@@ -224,16 +202,16 @@ namespace Client {
     }
     export class ParticleManager {
         private particleList: Array<Particle.Particle>;
-        private view: View;
-        constructor(view: View) {
+        private ctx: CanvasRenderingContext2D;
+        constructor(ctx: CanvasRenderingContext2D) {
             this.particleList = new Array<Particle.Particle>();
-            this.view = view;
+            this.ctx = ctx;
         }
 
         public onUpdate() {
             this.particleList.forEach((particle: Particle.Particle, index: number) => {
                 particle.onUpdate();
-                particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.view);
+                particle.getShape().draw(particle.getCoord(), particle.getColor(), particle.getSize(), this.ctx);
                 if (particle.isParticleDead()) {
                     this.particleList.splice(index, 1);
                 }
@@ -248,14 +226,14 @@ namespace Client {
     export namespace Shape {
         export abstract class Shape {
             //描画時の処理
-            public draw(coord: Util.Coord, color: Util.Color, size: number, view: View) { };
+            public draw(coord: Util.Coord, color: Util.Color, size: number, ctx: CanvasRenderingContext2D) { };
         }
         export class ShapeCircle extends Shape {
-            public draw(coord: Util.Coord, color: Util.Color, size: number, view: View) {
-                view.getctx().beginPath()
-                view.getctx().fillStyle = color.getString();
-                view.getctx().arc(coord.x, coord.y, size, 0, 2 * Math.PI);
-                view.getctx().fill();
+            public draw(coord: Util.Coord, color: Util.Color, size: number, ctx: CanvasRenderingContext2D) {
+                ctx.beginPath()
+                ctx.fillStyle = color.getString();
+                ctx.arc(coord.x, coord.y, size, 0, 2 * Math.PI);
+                ctx.fill();
             }
         }
     }
@@ -263,12 +241,10 @@ namespace Client {
     //クライアント系の処理を総括で管理
     export class Client {
         public document: Document;
-        public view: View;
         public controller: Controller;
         private rootScene: Scene.Scene;
         constructor(document: Document) {
             this.document = document;
-            this.view = new View(this.document);
             this.controller = new Controller(this.document);
             this.rootScene = new Scene.Scene(this);
         }
@@ -282,7 +258,6 @@ namespace Client {
         }
 
         public onUpdate = () => {
-            this.view.onUpdate();
             this.controller.onUpdate();
             this.rootScene.onSystemUpdate();
         }
@@ -395,7 +370,7 @@ namespace Client {
     }
 
     //出力（描画）関連
-    export class View {
+    /*export class View {
         private height: number;
         private width: number;
         private canvas: any;
@@ -403,15 +378,8 @@ namespace Client {
 
         constructor(document: Document) {
             this.document = document;
-            //this.height = this.document.documentElement.clientHeight;
-            //this.width = this.document.documentElement.clientWidth;
-            this.height = window.innerHeight
-            this.width = window.innerWidth
-
-            //this.canvas = Util.DOMHandler.createElement('canvas', {
-            //    height: this.height,
-            //    width: this.width
-            //});
+            this.height = window.innerHeight;
+            this.width = window.innerWidth;
 
             this.canvas = document.createElement("canvas");
             this.canvas.height = this.height;
@@ -446,7 +414,7 @@ namespace Client {
         public onUpdate() {
 
         }
-    }
+    }*/
 
 
 }
