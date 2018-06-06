@@ -2,11 +2,12 @@
   "buildOnSave": true,
   "compileOnSave": true,
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2017",
+    "target": "esnext",
+    "module": "esnext",
     "sourceMap": true,
     "types" : ["node"],
     "outDir": "src/dist",
+    "noEmitHelpers": true,
   },
   "exclude": [
     "node_modules"
