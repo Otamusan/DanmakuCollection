@@ -7,7 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "watch": "tsc --watch"
-
   },
   "keywords": [],
   "author": "",
@@ -27,6 +26,6 @@
   "homepage": "https://github.com/Otamusan/DanmakuCollection#readme",
   "description": "",
   "devDependencies": {
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.1"
   }
 }

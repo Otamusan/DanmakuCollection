@@ -1,3 +1,183 @@
+var Common;
+(function (Common) {
+    class StateTree {
+        constructor(parentState) {
+            this.currentSubState = null;
+            if (parentState == undefined) {
+                this.parentState = null;
+            }
+            else {
+                this.parentState = parentState;
+            }
+        }
+        onSystemUpdate() {
+            if (this.currentSubState != null) {
+                this.currentSubState.onSystemUpdate();
+                return;
+            }
+            this.onUpdate();
+        }
+        //オーバーライド用
+        onUpdate() {
+        }
+        //子ステートへ移行
+        transitionSubState(subState) {
+            this.currentSubState = subState;
+            this.currentSubState.onTransitionedParentState(this);
+        }
+        //親ステートから移行されたときに呼び出される
+        onTransitionedParentState(parentState) {
+        }
+        //親ステートへ戻る
+        returnParentState() {
+            this.parentState.currentSubState = null;
+            this.parentState.onReturnedFromSubState(this);
+        }
+        //子ステートから戻ってきたときに呼び出される
+        onReturnedFromSubState(subState) {
+        }
+    }
+    Common.StateTree = StateTree;
+    class Color {
+        constructor(r, g, b) {
+            if (r > 255) {
+                this.r = 255;
+            }
+            else {
+                this.r = r;
+            }
+            if (g > 255) {
+                this.g = 255;
+            }
+            else {
+                this.g = g;
+            }
+            if (b > 255) {
+                this.b = 255;
+            }
+            else {
+                this.b = b;
+            }
+        }
+        // hは0から359まで
+        // sは0から1まで
+        // vは0から1まで
+        static createFromHSV(h, s, v) {
+            let c = v * s;
+            let Hp = h / 60;
+            let x = c * (1 - Math.abs(Hp % 2 - 1));
+            let r;
+            let g;
+            let b;
+            if (0 <= Hp && Hp < 1) {
+                r = c;
+                g = x;
+                b = 0;
+            }
+            if (1 <= Hp && Hp < 2) {
+                r = x;
+                g = c;
+                b = 0;
+            }
+            if (2 <= Hp && Hp < 3) {
+                r = 0;
+                g = c;
+                b = x;
+            }
+            if (3 <= Hp && Hp < 4) {
+                r = 0;
+                g = x;
+                b = c;
+            }
+            if (4 <= Hp && Hp < 5) {
+                r = x;
+                g = 0;
+                b = c;
+            }
+            if (5 <= Hp && Hp < 6) {
+                r = c;
+                g = 0;
+                b = x;
+            }
+            var m = v - c;
+            r += m;
+            g += m;
+            b += m;
+            r = Math.floor(r * 255);
+            g = Math.floor(g * 255);
+            b = Math.floor(b * 255);
+            return new Color(r, g, b);
+        }
+        getString() {
+            let r = Math.floor(this.r).toString(16);
+            let g = Math.floor(this.g).toString(16);
+            let b = Math.floor(this.b).toString(16);
+            if (r.length == 1) {
+                r = "0" + r;
+            }
+            if (g.length == 1) {
+                g = "0" + g;
+            }
+            if (b.length == 1) {
+                b = "0" + b;
+            }
+            return "#" + r + g + b;
+        }
+        getR() {
+            return this.r;
+        }
+        getG() {
+            return this.g;
+        }
+        getB() {
+            return this.b;
+        }
+    }
+    Common.Color = Color;
+    class Coord {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+        static createFromRadian(rad, length) {
+            let x = Math.cos(rad) * length;
+            let y = Math.sin(rad) * length;
+            return new Coord(x, y);
+        }
+        getDistance(otherCoord) {
+            return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
+        }
+        isEqual(other) {
+            return other.x == this.x && other.y == this.y;
+        }
+        copy() {
+            return new Coord(this.x, this.y);
+        }
+        subtractCoord(other) {
+            this.x -= other.x;
+            this.y -= other.y;
+            return this;
+        }
+        addCoord(other) {
+            this.x += other.x;
+            this.y += other.y;
+            return this;
+        }
+        addUp(n) {
+            this.y -= n;
+        }
+        addDown(n) {
+            this.y += n;
+        }
+        addRight(n) {
+            this.x += n;
+        }
+        addLeft(n) {
+            this.x -= n;
+        }
+    }
+    Common.Coord = Coord;
+})(Common || (Common = {}));
 var Client;
 (function (Client_1) {
     class SoundEffect {
@@ -82,16 +262,10 @@ var Client;
     //タイトル画面やゲーム画面、セレクト画面、メニュー画面などの管理
     let Scene;
     (function (Scene_1) {
-        class Scene {
+        class Scene extends Common.StateTree {
             constructor(client, div, parentScene) {
+                super(parentScene);
                 this.client = client;
-                this.currentSubScene = null;
-                if (parentScene == undefined) {
-                    this.parentScene = null;
-                }
-                else {
-                    this.parentScene = parentScene;
-                }
                 if (div == undefined) {
                     this.sceneDiv = DOM.DOMHandler.createElementByJS("div", null);
                 }
@@ -103,14 +277,9 @@ var Client;
                 this.sceneDiv.style.width = client.width + "";
             }
             onSystemUpdate() {
-                if (this.currentSubScene != null) {
-                    this.currentSubScene.onSystemUpdate();
-                    return;
-                }
-                this.onUpdate();
+                super.onSystemUpdate();
                 this.onDrawUpdate();
             }
-            //ロジック用
             onUpdate() {
             }
             //描画用
@@ -131,24 +300,24 @@ var Client;
                 this.client.document.body.appendChild(this.sceneDiv);
             }
             //子シーンへ移行
-            transitionSubScene(subScene) {
-                this.currentSubScene = subScene;
+            transitionSubState(subState) {
+                this.currentSubState = subState;
                 this.removeSceneDiv();
-                subScene.appendSceneDiv();
-                this.currentSubScene.onTransitionedParentScene(this);
+                subState.appendSceneDiv();
+                this.currentSubState.onTransitionedParentState(this);
             }
             //親シーンから移行されたときに呼び出される
-            onTransitionedParentScene(parentScene) {
+            onTransitionedParentState(parentState) {
             }
             //親シーンへ戻る
-            returnParentScene() {
-                this.parentScene.currentSubScene = null;
+            returnParentState() {
+                this.parentState.currentSubState = null;
                 this.removeSceneDiv();
-                this.parentScene.appendSceneDiv();
-                this.parentScene.onReturnedFromSubScene(this);
+                this.parentState.appendSceneDiv();
+                this.parentState.onReturnedFromSubState(this);
             }
             //子シーンから戻ってきたときに呼び出される
-            onReturnedFromSubScene(subScene) {
+            onReturnedFromSubState(subState) {
             }
         }
         Scene_1.Scene = Scene;
@@ -159,7 +328,7 @@ var Client;
             }
             onUpdate() {
                 if (this.getMouse().isMousePressed(MouseState.LEFT_BUTTON)) {
-                    this.transitionSubScene(this.game);
+                    this.transitionSubState(this.game);
                 }
             }
         }
@@ -175,16 +344,18 @@ var Client;
                 this.ctx = this.canvas.getContext("2d");
                 this.particleManager = new ParticleManager(this.ctx);
             }
-            onTransitionedParentScene(scene) {
+            onTransitionedParentState(parentState) {
                 this.initCanvas();
             }
             onUpdate() {
                 this.particleManager.onUpdate();
-                let particle = new Particle.Particle(new Util.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()), Util.Coord.createFromRadian(Math.random() * 2 * Math.PI, 4), this.getMouse().getCoord().copy(), 10000 * Math.random(), 100, [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.FADE, new Particle.PFuncRotate(Math.random()), Particle.PFuncs.DECELERATION1_1], Shape.Shapes.SQUARE, Math.random() * 2 * Math.PI, 0.5);
-                this.particleManager.spawnParticle(particle);
+                for (let i = 0; i < 100; i++) {
+                    let particle = new Particle.Particle(new Common.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()), Common.Coord.createFromRadian(Math.random() * 2 * Math.PI, 4).addCoord(this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy())), this.getMouse().getCoord().copy(), 10000 * Math.random(), 100, [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.FADE, new Particle.PFuncRotate(Math.random()), Particle.PFuncs.DECELERATION1_1], Shape.Shapes.SQUARE, Math.random() * 2 * Math.PI, 0.5);
+                    this.particleManager.spawnParticle(particle);
+                }
             }
             onDrawUpdate() {
-                this.DrawBackGround(new Util.Color(0, 0, 0));
+                this.DrawBackGround(new Common.Color(0, 0, 0));
                 this.particleManager.onDrawUpdate();
             }
             DrawBackGround(color) {
@@ -194,6 +365,146 @@ var Client;
         }
         Scene_1.SceneGame = SceneGame;
     })(Scene = Client_1.Scene || (Client_1.Scene = {}));
+    /*export namespace Scene {
+        export class Scene {
+            public client: Client;
+            private parentScene: Scene;
+            protected currentSubScene: Scene;
+            protected sceneDiv: HTMLDivElement;
+            constructor(client: Client, div: HTMLDivElement, parentScene?: Scene) {
+                this.client = client;
+                this.currentSubScene = null
+                if (parentScene == undefined) {
+                    this.parentScene = null;
+                } else {
+                    this.parentScene = parentScene;
+                }
+                if (div == undefined) {
+                    this.sceneDiv = DOM.DOMHandler.createElementByJS<HTMLDivElement>("div", null);
+                } else {
+                    this.sceneDiv = div;
+                }
+                this.sceneDiv.style.margin = "0";
+                this.sceneDiv.style.height = client.height + "";
+                this.sceneDiv.style.width = client.width + "";
+            }
+
+            public onSystemUpdate() {
+                if (this.currentSubScene != null) {
+                    this.currentSubScene.onSystemUpdate();
+                    return;
+                }
+                this.onUpdate();
+                this.onDrawUpdate();
+            }
+
+            //ロジック用
+            public onUpdate() {
+
+            }
+            //描画用
+            public onDrawUpdate() {
+
+            }
+
+            public getMouse(): MouseState {
+                return this.client.controller.getMouseState();
+            }
+
+            public getKey(): KeyState {
+                return this.client.controller.getKeyState();
+            }
+            //このシーン用のdiv要素を外す
+            public removeSceneDiv() {
+                this.client.document.body.removeChild(this.sceneDiv);
+            }
+            //このシーン用のdiv要素を付ける
+            public appendSceneDiv() {
+                this.client.document.body.appendChild(this.sceneDiv);
+            }
+
+            //子シーンへ移行
+            public transitionSubScene(subScene: Scene) {
+                this.currentSubScene = subScene;
+                this.removeSceneDiv();
+                subScene.appendSceneDiv();
+                this.currentSubScene.onTransitionedParentScene(this);
+            }
+
+            //親シーンから移行されたときに呼び出される
+            public onTransitionedParentScene(parentScene: Scene) {
+            }
+
+            //親シーンへ戻る
+            public returnParentScene() {
+                this.parentScene.currentSubScene = null;
+                this.removeSceneDiv();
+                this.parentScene.appendSceneDiv();
+                this.parentScene.onReturnedFromSubScene(this);
+            }
+            //子シーンから戻ってきたときに呼び出される
+            public onReturnedFromSubScene(subScene: Scene) {
+            }
+        }
+
+        export class SceneTitle extends Scene {
+            private game: Scene;
+            constructor(client: Client, div: HTMLDivElement) {
+                super(client, div);
+                this.game = new SceneGame(client, client.divManager.getDivCopy("game"));
+            }
+
+            public onUpdate() {
+                if (this.getMouse().isMousePressed(MouseState.LEFT_BUTTON)) {
+                    this.transitionSubScene(this.game);
+                }
+            }
+        }
+        export class SceneGame extends Scene {
+            public canvas: HTMLCanvasElement;
+            public particleManager: ParticleManager;
+            public ctx: CanvasRenderingContext2D;
+            constructor(client: Client, div: HTMLDivElement) {
+                super(client, div);
+            }
+            public initCanvas() {
+                this.canvas = DOM.DOMHandler.getElementByID<HTMLCanvasElement>(document, "canvas");
+                this.canvas.width = this.client.width;
+                this.canvas.height = this.client.height;
+                this.ctx = this.canvas.getContext("2d");
+                this.particleManager = new ParticleManager(this.ctx)
+            }
+
+            public onTransitionedParentScene(scene: Scene) {
+                this.initCanvas();
+            }
+
+            public onUpdate() {
+                this.particleManager.onUpdate();
+                let particle = new Particle.Particle(
+                    new Common.Color(255*Math.random(), 255*Math.random(), 255*Math.random()),
+                    Common.Coord.createFromRadian(Math.random()*2*Math.PI, 4).addCoord(this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy())),
+                    this.getMouse().getCoord().copy(),
+                    10000*Math.random(),
+                    100,
+                    [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.FADE, new Particle.PFuncRotate(Math.random()), Particle.PFuncs.DECELERATION1_1],
+                    Shape.Shapes.SQUARE,
+                    Math.random()*2*Math.PI,
+                    0.5);
+                this.particleManager.spawnParticle(particle);
+            }
+
+            public onDrawUpdate() {
+                this.DrawBackGround(new Common.Color(0, 0, 0));
+                this.particleManager.onDrawUpdate();
+            }
+
+            public DrawBackGround(color: Common.Color) {
+                this.ctx.fillStyle = color.getString();
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+    }*/
     //画面でチラチラ動くやつ
     let Particle;
     (function (Particle_1) {
@@ -209,7 +520,7 @@ var Client;
                 this.acc = acc;
             }
             onUpdate(particle) {
-                let newvector = new Util.Coord(particle.getVector().x * this.acc, particle.getVector().y * this.acc);
+                let newvector = new Common.Coord(particle.getVector().x * this.acc, particle.getVector().y * this.acc);
                 particle.setVector(newvector);
             }
         }
@@ -255,7 +566,7 @@ var Client;
         PFuncs.ACCELERATE1_1 = new PFuncAccelerate(1.1);
         //0.9倍に加速
         PFuncs.DECELERATION1_1 = new PFuncAccelerate(0.9);
-        //時間がたつと薄くなる
+        //時間が経つと薄くなる
         PFuncs.FADE = new PFuncFade();
         //下に向かって1.1倍に加速
         PFuncs.GRAVITY = new PFuncGravity(0.1);
@@ -455,9 +766,9 @@ var Client;
     class MouseState {
         constructor() {
             this.buttonAmount = 3;
-            this.mouseCoord = new Util.Coord(0, 0);
-            this.currentCoord = new Util.Coord(0, 0);
-            this.previousCoord = new Util.Coord(0, 0);
+            this.mouseCoord = new Common.Coord(0, 0);
+            this.currentCoord = new Common.Coord(0, 0);
+            this.previousCoord = new Common.Coord(0, 0);
             this.onMouseDown = (event) => {
                 this.isPressed[event.button] = true;
             };
@@ -465,7 +776,7 @@ var Client;
                 this.isPressed[event.button] = false;
             };
             this.onMouseMove = (event) => {
-                this.mouseCoord = new Util.Coord(event.clientX, event.clientY);
+                this.mouseCoord = new Common.Coord(event.clientX, event.clientY);
             };
             this.isPressed = new Array(this.buttonAmount);
             this.isPressed.fill(false);
@@ -514,189 +825,37 @@ var Client;
     KeyState.LEFT = 37;
     KeyState.RIGHT = 39;
     Client_1.KeyState = KeyState;
-    //出力（描画）関連
-    /*export class View {
-        private height: number;
-        private width: number;
-        private canvas: any;
-        private document: Document
-
-        constructor(document: Document) {
-            this.document = document;
-            this.height = window.innerHeight;
-            this.width = window.innerWidth;
-
-            this.canvas = document.createElement("canvas");
-            this.canvas.height = this.height;
-            this.canvas.width = this.width;
-
-            this.displayCanvas();
-        }
-
-        //canvasの表示
-        public displayCanvas() {
-            this.document.body.style.margin = "0";
-            this.document.body.style.overflow = "hidden"
-            this.document.body.appendChild(this.canvas);
-        }
-        public drawBackGround(color: Util.Color) {
-            this.getctx().fillStyle = color.getString();
-            this.getctx().fillRect(0, 0, this.width, this.height)
-        }
-        public getctx(): CanvasRenderingContext2D {
-            return this.canvas.getContext('2d');
-        }
-        public getGL(): WebGLRenderingContext {
-            return this.canvas.getContext("webgl");
-        }
-        //webGLの初期化
-        public WebGLinit() {
-            this.getGL().clearColor(0.0, 0.0, 0.0, 1.0);
-            this.getGL().enable(this.getGL().DEPTH_TEST);
-            this.getGL().depthFunc(this.getGL().LEQUAL);
-            this.getGL().clear(this.getGL().COLOR_BUFFER_BIT | this.getGL().DEPTH_BUFFER_BIT);
-        }
-        public onUpdate() {
-
-        }
-    }*/
 })(Client || (Client = {}));
-var Util;
-(function (Util) {
-    class Color {
-        constructor(r, g, b) {
-            if (r > 255) {
-                this.r = 255;
-            }
-            else {
-                this.r = r;
-            }
-            if (g > 255) {
-                this.g = 255;
-            }
-            else {
-                this.g = g;
-            }
-            if (b > 255) {
-                this.b = 255;
-            }
-            else {
-                this.b = b;
-            }
-        }
-        // hは0から359まで
-        // sは0から1まで
-        // vは0から1まで
-        static createFromHSV(h, s, v) {
-            let c = v * s;
-            let Hp = h / 60;
-            let x = c * (1 - Math.abs(Hp % 2 - 1));
-            let r;
-            let g;
-            let b;
-            if (0 <= Hp && Hp < 1) {
-                r = c;
-                g = x;
-                b = 0;
-            }
-            if (1 <= Hp && Hp < 2) {
-                r = x;
-                g = c;
-                b = 0;
-            }
-            if (2 <= Hp && Hp < 3) {
-                r = 0;
-                g = c;
-                b = x;
-            }
-            if (3 <= Hp && Hp < 4) {
-                r = 0;
-                g = x;
-                b = c;
-            }
-            if (4 <= Hp && Hp < 5) {
-                r = x;
-                g = 0;
-                b = c;
-            }
-            if (5 <= Hp && Hp < 6) {
-                r = c;
-                g = 0;
-                b = x;
-            }
-            var m = v - c;
-            r += m;
-            g += m;
-            b += m;
-            r = Math.floor(r * 255);
-            g = Math.floor(g * 255);
-            b = Math.floor(b * 255);
-            return new Color(r, g, b);
-        }
-        getString() {
-            let r = Math.floor(this.r).toString(16);
-            let g = Math.floor(this.g).toString(16);
-            let b = Math.floor(this.b).toString(16);
-            if (r.length == 1) {
-                r = "0" + r;
-            }
-            if (g.length == 1) {
-                g = "0" + g;
-            }
-            if (b.length == 1) {
-                b = "0" + b;
-            }
-            return "#" + r + g + b;
-        }
-        getR() {
-            return this.r;
-        }
-        getG() {
-            return this.g;
-        }
-        getB() {
-            return this.b;
+var Server;
+(function (Server_1) {
+    class Server {
+        constructor() {
+            this.fieldList = new Array();
         }
     }
-    Util.Color = Color;
-    class Coord {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
+    Server_1.Server = Server;
+    let Field;
+    (function (Field_1) {
+        class Field {
+            constructor() {
+                this.playerList = new Array();
+            }
         }
-        static createFromRadian(rad, length) {
-            let x = Math.cos(rad) * length;
-            let y = Math.sin(rad) * length;
-            return new Coord(x, y);
-        }
-        getDistance(otherCoord) {
-            return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
-        }
-        isEqual(other) {
-            return other.x == this.x && other.y == this.y;
-        }
-        copy() {
-            return new Coord(this.x, this.y);
-        }
-        addCoord(other) {
-            this.x += other.x;
-            this.y += other.y;
-        }
-        addUp(n) {
-            this.y -= n;
-        }
-        addDown(n) {
-            this.y += n;
-        }
-        addRight(n) {
-            this.x += n;
-        }
-        addLeft(n) {
-            this.x -= n;
+        Field_1.Field = Field;
+    })(Field = Server_1.Field || (Server_1.Field = {}));
+    class Player {
+        constructor(name) {
+            this.name = name;
         }
     }
-    Util.Coord = Coord;
-})(Util || (Util = {}));
+    Server_1.Player = Player;
+    class PlayerManager {
+        constructor() {
+            this.playerList = new Array();
+        }
+    }
+    Server_1.PlayerManager = PlayerManager;
+})(Server || (Server = {}));
 var main;
 (function (main) {
     const client = new Client.Client(document, 600, 800);
