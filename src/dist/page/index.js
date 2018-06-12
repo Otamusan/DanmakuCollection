@@ -163,38 +163,46 @@ var Common;
             this.y += other.y;
             return this;
         }
+        multiplyCoord(n) {
+            this.x *= n;
+            this.y *= n;
+            return this;
+        }
         addUp(n) {
             this.y -= n;
+            return this;
         }
         addDown(n) {
             this.y += n;
+            return this;
         }
         addRight(n) {
             this.x += n;
+            return this;
         }
         addLeft(n) {
             this.x -= n;
+            return this;
         }
     }
     Common.Coord = Coord;
 })(Common || (Common = {}));
 var Client;
 (function (Client_1) {
-    class SoundEffect {
-        constructor(source) {
-            this.audio = new Audio(source);
+    let Sound;
+    (function (Sound) {
+        class SoundEffect {
+            constructor(source) {
+                this.source = source;
+            }
+            play(volume) {
+                let audio = new Audio(this.source);
+                audio.volume = volume;
+                audio.play();
+            }
         }
-        play() {
-            this.audio.play();
-        }
-        setVolume(volume) {
-            this.audio.volume = volume;
-        }
-        getVolume() {
-            return this.audio.volume;
-        }
-    }
-    Client_1.SoundEffect = SoundEffect;
+        Sound.SoundEffect = SoundEffect;
+    })(Sound = Client_1.Sound || (Client_1.Sound = {}));
     let DOM;
     (function (DOM) {
         class CanvasUtil {
@@ -301,6 +309,8 @@ var Client;
             }
             //子シーンへ移行
             transitionSubState(subState) {
+                if (!(subState instanceof Scene))
+                    return;
                 this.currentSubState = subState;
                 this.removeSceneDiv();
                 subState.appendSceneDiv();
@@ -349,10 +359,12 @@ var Client;
             }
             onUpdate() {
                 this.particleManager.onUpdate();
-                for (let i = 0; i < 100; i++) {
-                    let particle = new Particle.Particle(new Common.Color(255 * Math.random(), 255 * Math.random(), 255 * Math.random()), Common.Coord.createFromRadian(Math.random() * 2 * Math.PI, 4).addCoord(this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy())), this.getMouse().getCoord().copy(), 10000 * Math.random(), 100, [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.FADE, new Particle.PFuncRotate(Math.random()), Particle.PFuncs.DECELERATION1_1], Shape.Shapes.SQUARE, Math.random() * 2 * Math.PI, 0.5);
+                for (let i = 0; i < 1; i++) {
+                    let particle = new Particle.Particle(Common.Color.createFromHSV(80 + Math.random() * 40 - 20, 1, 1), this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy()).multiplyCoord(Math.random() / 10), this.getMouse().getCoord().copy(), 100 * Math.random(), 100, new Particle.PFunc([Particle.PFuncs.FADE, Particle.PFuncs.SHRINK, Particle.PFuncs.DECELERATION1_1]), Shape.Shapes.SQUARE, Math.random() * 2 * Math.PI, 0.5);
                     this.particleManager.spawnParticle(particle);
                 }
+            }
+            sendInfoToServer() {
             }
             onDrawUpdate() {
                 this.DrawBackGround(new Common.Color(0, 0, 0));
@@ -365,158 +377,30 @@ var Client;
         }
         Scene_1.SceneGame = SceneGame;
     })(Scene = Client_1.Scene || (Client_1.Scene = {}));
-    /*export namespace Scene {
-        export class Scene {
-            public client: Client;
-            private parentScene: Scene;
-            protected currentSubScene: Scene;
-            protected sceneDiv: HTMLDivElement;
-            constructor(client: Client, div: HTMLDivElement, parentScene?: Scene) {
-                this.client = client;
-                this.currentSubScene = null
-                if (parentScene == undefined) {
-                    this.parentScene = null;
-                } else {
-                    this.parentScene = parentScene;
-                }
-                if (div == undefined) {
-                    this.sceneDiv = DOM.DOMHandler.createElementByJS<HTMLDivElement>("div", null);
-                } else {
-                    this.sceneDiv = div;
-                }
-                this.sceneDiv.style.margin = "0";
-                this.sceneDiv.style.height = client.height + "";
-                this.sceneDiv.style.width = client.width + "";
-            }
-
-            public onSystemUpdate() {
-                if (this.currentSubScene != null) {
-                    this.currentSubScene.onSystemUpdate();
-                    return;
-                }
-                this.onUpdate();
-                this.onDrawUpdate();
-            }
-
-            //ロジック用
-            public onUpdate() {
-
-            }
-            //描画用
-            public onDrawUpdate() {
-
-            }
-
-            public getMouse(): MouseState {
-                return this.client.controller.getMouseState();
-            }
-
-            public getKey(): KeyState {
-                return this.client.controller.getKeyState();
-            }
-            //このシーン用のdiv要素を外す
-            public removeSceneDiv() {
-                this.client.document.body.removeChild(this.sceneDiv);
-            }
-            //このシーン用のdiv要素を付ける
-            public appendSceneDiv() {
-                this.client.document.body.appendChild(this.sceneDiv);
-            }
-
-            //子シーンへ移行
-            public transitionSubScene(subScene: Scene) {
-                this.currentSubScene = subScene;
-                this.removeSceneDiv();
-                subScene.appendSceneDiv();
-                this.currentSubScene.onTransitionedParentScene(this);
-            }
-
-            //親シーンから移行されたときに呼び出される
-            public onTransitionedParentScene(parentScene: Scene) {
-            }
-
-            //親シーンへ戻る
-            public returnParentScene() {
-                this.parentScene.currentSubScene = null;
-                this.removeSceneDiv();
-                this.parentScene.appendSceneDiv();
-                this.parentScene.onReturnedFromSubScene(this);
-            }
-            //子シーンから戻ってきたときに呼び出される
-            public onReturnedFromSubScene(subScene: Scene) {
-            }
-        }
-
-        export class SceneTitle extends Scene {
-            private game: Scene;
-            constructor(client: Client, div: HTMLDivElement) {
-                super(client, div);
-                this.game = new SceneGame(client, client.divManager.getDivCopy("game"));
-            }
-
-            public onUpdate() {
-                if (this.getMouse().isMousePressed(MouseState.LEFT_BUTTON)) {
-                    this.transitionSubScene(this.game);
-                }
-            }
-        }
-        export class SceneGame extends Scene {
-            public canvas: HTMLCanvasElement;
-            public particleManager: ParticleManager;
-            public ctx: CanvasRenderingContext2D;
-            constructor(client: Client, div: HTMLDivElement) {
-                super(client, div);
-            }
-            public initCanvas() {
-                this.canvas = DOM.DOMHandler.getElementByID<HTMLCanvasElement>(document, "canvas");
-                this.canvas.width = this.client.width;
-                this.canvas.height = this.client.height;
-                this.ctx = this.canvas.getContext("2d");
-                this.particleManager = new ParticleManager(this.ctx)
-            }
-
-            public onTransitionedParentScene(scene: Scene) {
-                this.initCanvas();
-            }
-
-            public onUpdate() {
-                this.particleManager.onUpdate();
-                let particle = new Particle.Particle(
-                    new Common.Color(255*Math.random(), 255*Math.random(), 255*Math.random()),
-                    Common.Coord.createFromRadian(Math.random()*2*Math.PI, 4).addCoord(this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy())),
-                    this.getMouse().getCoord().copy(),
-                    10000*Math.random(),
-                    100,
-                    [Particle.PFuncs.GRAVITY, Particle.PFuncs.SHRINK, Particle.PFuncs.FADE, new Particle.PFuncRotate(Math.random()), Particle.PFuncs.DECELERATION1_1],
-                    Shape.Shapes.SQUARE,
-                    Math.random()*2*Math.PI,
-                    0.5);
-                this.particleManager.spawnParticle(particle);
-            }
-
-            public onDrawUpdate() {
-                this.DrawBackGround(new Common.Color(0, 0, 0));
-                this.particleManager.onDrawUpdate();
-            }
-
-            public DrawBackGround(color: Common.Color) {
-                this.ctx.fillStyle = color.getString();
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-        }
-    }*/
     //画面でチラチラ動くやつ
     let Particle;
     (function (Particle_1) {
         //パーティクルの機能部分(Bridgeパターン)
         //基本的にパーティクルの機能の種類ごとに実体化する
         class PFunc {
-            onUpdate(particle) { }
+            constructor(subFuncList) {
+                this.subFuncList = subFuncList;
+            }
+            onSystemUpdate(particle) {
+                if (this.subFuncList != null) {
+                    this.subFuncList.forEach(Pfunc => {
+                        Pfunc.onSystemUpdate(particle);
+                    });
+                }
+                this.onUpdate(particle);
+            }
+            onUpdate(particle) {
+            }
         }
         Particle_1.PFunc = PFunc;
         class PFuncAccelerate extends PFunc {
-            constructor(acc) {
-                super();
+            constructor(subFuncList, acc) {
+                super(subFuncList);
                 this.acc = acc;
             }
             onUpdate(particle) {
@@ -526,8 +410,8 @@ var Client;
         }
         Particle_1.PFuncAccelerate = PFuncAccelerate;
         class PFuncGravity extends PFunc {
-            constructor(acc) {
-                super();
+            constructor(subFuncList, acc) {
+                super(subFuncList);
                 this.acc = acc;
             }
             onUpdate(particle) {
@@ -544,15 +428,14 @@ var Client;
         Particle_1.PFuncShrink = PFuncShrink;
         class PFuncFade extends PFunc {
             onUpdate(particle) {
-                //let newalpha = 1-particle.getTime()/particle.getRemain();
                 let newalpha = particle.getAlpha() - (particle.getAlpha() / (particle.getRemain() - particle.getTime()));
                 particle.setAlpha(newalpha);
             }
         }
         Particle_1.PFuncFade = PFuncFade;
         class PFuncRotate extends PFunc {
-            constructor(acc) {
-                super();
+            constructor(subFuncList, acc) {
+                super(subFuncList);
                 this.acc = acc;
             }
             onUpdate(particle) {
@@ -560,39 +443,37 @@ var Client;
             }
         }
         Particle_1.PFuncRotate = PFuncRotate;
-        class PFuncs {
-        }
-        //1.1倍に加速
-        PFuncs.ACCELERATE1_1 = new PFuncAccelerate(1.1);
-        //0.9倍に加速
-        PFuncs.DECELERATION1_1 = new PFuncAccelerate(0.9);
-        //時間が経つと薄くなる
-        PFuncs.FADE = new PFuncFade();
-        //下に向かって1.1倍に加速
-        PFuncs.GRAVITY = new PFuncGravity(0.1);
-        //時間が経つと小さくなる
-        PFuncs.SHRINK = new PFuncShrink();
-        //１tickに1度回転
-        PFuncs.ROTATE = new PFuncRotate(1);
-        Particle_1.PFuncs = PFuncs;
+        let PFuncs;
+        (function (PFuncs) {
+            //1.1倍に加速
+            PFuncs.ACCELERATE1_1 = new PFuncAccelerate(null, 1.1);
+            //0.9倍に加速
+            PFuncs.DECELERATION1_1 = new PFuncAccelerate(null, 0.9);
+            //時間が経つと薄くなる
+            PFuncs.FADE = new PFuncFade(null);
+            //下に向かって1.1倍に加速
+            PFuncs.GRAVITY = new PFuncGravity(null, 0.1);
+            //時間が経つと小さくなる
+            PFuncs.SHRINK = new PFuncShrink(null);
+            //１tickに1度回転
+            PFuncs.ROTATE = new PFuncRotate(null, 1);
+        })(PFuncs = Particle_1.PFuncs || (Particle_1.PFuncs = {}));
         //パーティクルの実装部分(Bridgeパターン)
         class Particle {
-            constructor(color, vector, coord, size, remain, list, shape, radian, alpha) {
+            constructor(color, vector, coord, size, remain, pFunc, shape, radian, alpha) {
                 this.color = color;
                 this.vector = vector;
                 this.coord = coord;
                 this.size = size;
                 this.remain = remain;
                 this.shape = shape;
-                this.pFuncList = list;
+                this.pFunc = pFunc;
                 this.time = 0;
                 this.radian = radian;
                 this.alpha = alpha;
             }
             onUpdate() {
-                this.pFuncList.forEach((pfunc) => {
-                    pfunc.onUpdate(this);
-                });
+                this.pFunc.onSystemUpdate(this);
                 this.time++;
                 this.coord.addCoord(this.vector);
                 if (this.time >= this.remain) {
@@ -709,9 +590,11 @@ var Client;
         Shape_1.ShapeSquare = ShapeSquare;
         class Shapes {
         }
-        Shapes.CIRCLE = new ShapeCircle();
-        Shapes.SQUARE = new ShapeSquare();
         Shape_1.Shapes = Shapes;
+        (function (Shapes) {
+            Shapes.CIRCLE = new ShapeCircle();
+            Shapes.SQUARE = new ShapeSquare();
+        })(Shapes = Shape_1.Shapes || (Shape_1.Shapes = {}));
     })(Shape = Client_1.Shape || (Client_1.Shape = {}));
     //クライアント系の処理を総括で管理
     class Client {
@@ -828,30 +711,142 @@ var Client;
 })(Client || (Client = {}));
 var Server;
 (function (Server_1) {
-    class Server {
-        constructor() {
-            this.fieldList = new Array();
-        }
-    }
-    Server_1.Server = Server;
-    let Field;
-    (function (Field_1) {
-        class Field {
-            constructor() {
-                this.playerList = new Array();
-            }
-        }
-        Field_1.Field = Field;
-    })(Field = Server_1.Field || (Server_1.Field = {}));
     class Player {
         constructor(name) {
             this.name = name;
         }
     }
     Server_1.Player = Player;
+    class Server {
+        constructor() {
+            this.onUpdate = () => {
+                this.fieldList.forEach(field => {
+                    field.onSystemUpdate();
+                });
+            };
+            this.fieldList = new Array();
+        }
+        getAvailableField(player) {
+            let field;
+            this.fieldList.forEach(f => {
+                if (f.canLogin(player)) {
+                    field = f;
+                }
+            });
+            return field;
+        }
+        login(player) {
+            let field = this.getAvailableField(player);
+            field.Login(player);
+            player.field = field;
+        }
+    }
+    Server_1.Server = Server;
+    let Field;
+    (function (Field_1) {
+        class Field extends Common.StateTree {
+            constructor(parent) {
+                super(parent);
+                this.playerManager = new PlayerManager();
+            }
+            transitionSubState(subState) {
+                if (!(subState instanceof Field))
+                    return;
+                this.currentSubState = subState;
+                this.currentSubState.onTransitionedParentState(this);
+            }
+            canLogin(play) {
+                return true;
+            }
+            Login(player) {
+                this.playerManager.Login(player);
+            }
+        }
+        Field_1.Field = Field;
+        class FieldGame extends Field {
+            constructor(parent) {
+                super(parent);
+                this.EntityList = new Array();
+            }
+            onUpdate() {
+                this.EntityList.forEach((entity, i) => {
+                    entity.onUpdate();
+                    if (entity.isDead) {
+                        this.EntityList[i] = null;
+                    }
+                });
+            }
+        }
+        Field_1.FieldGame = FieldGame;
+    })(Field = Server_1.Field || (Server_1.Field = {}));
+    let Entity;
+    (function (Entity_1) {
+        class Entity {
+            constructor() {
+            }
+            onUpdate() {
+            }
+            getCoord() {
+                return this.coord;
+            }
+            setCoord(coord) {
+                this.coord = coord;
+            }
+            setDead() {
+                this.isDead = true;
+            }
+        }
+        Entity_1.Entity = Entity;
+        class EntityLiving extends Entity {
+            constructor(maxHp) {
+                super();
+                this.maxHp = maxHp;
+                this.hp = maxHp;
+            }
+            onUpdate() {
+                this.coord.addCoord(this.vector.copy());
+            }
+            addDamaged(n) {
+                this.hp -= n;
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                }
+            }
+            getHP() {
+                return this.hp;
+            }
+            getMaxHP() {
+                return this.maxHp;
+            }
+            getVector() {
+                return this.coord;
+            }
+        }
+        Entity_1.EntityLiving = EntityLiving;
+        class EntityPlayer extends EntityLiving {
+            constructor(player, maxHp) {
+                super(maxHp);
+                this.player = player;
+            }
+            getPointerCoord() {
+                return this.player.controller.getMouseState().getCoord();
+            }
+            isPlayerClicked(n) {
+                return this.player.controller.getMouseState().isMousePressed(n);
+            }
+            onUpdate() {
+                let mouse = this.getPointerCoord();
+                this.coord.addCoord(mouse.multiplyCoord(0.1));
+            }
+        }
+        Entity_1.EntityPlayer = EntityPlayer;
+    })(Entity = Server_1.Entity || (Server_1.Entity = {}));
     class PlayerManager {
         constructor() {
             this.playerList = new Array();
+        }
+        Login(player) {
+            this.playerList.push(player);
         }
     }
     Server_1.PlayerManager = PlayerManager;
