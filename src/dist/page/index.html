@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html>
 
+
 <body>
     <div id="title">
         <h1>DanmakuCollection</h1>
     </div>
-    <div id ="game">
-        <canvas id ="canvas"></canvas>
+    <div id="game">
+        <canvas id="canvas"></canvas>
     </div>
 </body>
 
+
 <head>
-    <script src="index.js"></script>
+    <script>
+        //トランスパイルされたソースがexportsを想定しているため
+        var exports = {};
+    </script>
+    <script crossorigin="anonymous" src="index.js"></script>
+
 </head>
 
 </html>
