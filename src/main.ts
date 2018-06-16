@@ -1,6 +1,5 @@
 /// <reference types="electron" />
 import Electron = require("electron");
-import { Common } from "./page";
 'use strict';
 Electron.app.commandLine.appendSwitch('disable-web-security');
 Electron.app.on('window-all-closed', function () {
@@ -11,7 +10,6 @@ Electron.app.on('window-all-closed', function () {
 Electron.app.on('ready', function () {
   this.window = new Electron.BrowserWindow({
     webPreferences: {
-      
       nodeIntegration : true,
       nodeIntegrationInWorker: true
     },

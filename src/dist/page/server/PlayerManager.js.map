@@ -1,0 +1,1 @@
+{"version":3,"file":"PlayerManager.js","sourceRoot":"","sources":["../../../page/server/PlayerManager.ts"],"names":[],"mappings":";;AAEA;IAEI;QACI,IAAI,CAAC,UAAU,GAAG,IAAI,KAAK,EAAU,CAAA;IACzC,CAAC;IAEM,KAAK,CAAC,MAAc;QACvB,IAAI,CAAC,UAAU,CAAC,IAAI,CAAC,MAAM,CAAC,CAAC;IACjC,CAAC;CACJ;AATD,sCASC"}
