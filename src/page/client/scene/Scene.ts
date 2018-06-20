@@ -51,6 +51,10 @@ import { KeyState } from '../KeyState';
             this.client.document.body.appendChild(this.sceneDiv);
         }
 
+        public onLoadDiv(){
+
+        }
+
         //子シーンへ移行
         public transitionSubState(subState: StateTree) {
             if (!(subState instanceof Scene)) return;

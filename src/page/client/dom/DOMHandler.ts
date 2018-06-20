@@ -3,8 +3,39 @@ export class DOMHandler {
         return document.createElement<K>(tagName, options);
     }
 
-    public static getElementByID<T extends HTMLElement>(document: Document, id: string): T {
-        return document.getElementById(id) as T;
+    public static getElementByID<T extends HTMLElement>(element: HTMLElement, id: string): T {
+        /*element.childNodes.forEach((elt) => {
+            //console.log(elt)
+            if (elt instanceof HTMLElement) {
+                
+                if (elt.hasChildNodes) {
+                   node = this.getElementByID<T>(elt, id);
+                }
+
+                if ((elt as HTMLElement).id == id) {
+                    node = elt as T;
+                    //console.log(elt);
+                }
+                
+            }
+        });*/
+
+        for (let i = 0; i < element.childNodes.length; i++) {
+            let elt = element.childNodes.item(i);
+            if (elt instanceof HTMLElement){
+                if ((elt as HTMLElement).id==id){
+                    return elt as T
+                }else{
+                    if (elt.hasChildNodes){
+                        let par = this.getElementByID<T>(elt,id);
+                        if (par != null){
+                            return par;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     //DOMのElementを作成する

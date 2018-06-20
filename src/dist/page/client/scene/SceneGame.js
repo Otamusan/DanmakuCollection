@@ -9,11 +9,16 @@ const PFunc_1 = require("../particle/PFunc");
 const PFuncs_1 = require("../particle/PFuncs");
 const Shapes_1 = require("../shape/Shapes");
 class SceneGame extends Scene_1.Scene {
-    constructor(client, div) {
+    constructor(client, div, ws) {
         super(client, div);
+        this.ws = ws;
+        this.ws.onmessage = (e) => {
+            //this.serverField = e.data as FieldGame
+            console.log(e.data);
+        };
     }
     initCanvas() {
-        this.canvas = DOMHandler_1.DOMHandler.getElementByID(document, "canvas");
+        this.canvas = DOMHandler_1.DOMHandler.getElementByID(this.sceneDiv, "canvas");
         this.canvas.width = this.client.width;
         this.canvas.height = this.client.height;
         this.ctx = this.canvas.getContext("2d");

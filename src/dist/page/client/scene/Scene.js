@@ -40,6 +40,8 @@ class Scene extends StateTree_1.StateTree {
     appendSceneDiv() {
         this.client.document.body.appendChild(this.sceneDiv);
     }
+    onLoadDiv() {
+    }
     //子シーンへ移行
     transitionSubState(subState) {
         if (!(subState instanceof Scene))

@@ -1,5 +1,6 @@
 /// <reference types="electron" />
-import Electron = require("electron");
+import Electron = require('electron');
+import { Server } from './page/server/Server';
 'use strict';
 Electron.app.commandLine.appendSwitch('disable-web-security');
 Electron.app.on('window-all-closed', function () {
