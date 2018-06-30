@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const WebSocket = require("websocket");
-const Http = require("http");
-var WebSocketServer = WebSocket.server;
+const Player_1 = require("./Player");
 class Server {
     constructor() {
         this.onUpdate = () => {
@@ -12,30 +10,7 @@ class Server {
         };
         this.fieldList = new Array();
     }
-    serverStart() {
-        this.httpServer = Http.createServer((request, response) => {
-            response.writeHead(404);
-            response.end();
-        });
-        this.httpServer.listen(8080, function () {
-        });
-        this.wsServer = new WebSocketServer({
-            httpServer: this.httpServer,
-            autoAcceptConnections: false
-        });
-        this.wsServer.on('request', (request) => {
-            var connection = request.accept('echo-protocol', request.origin);
-            connection.on('message', function (message) {
-                if (message.type === 'utf8') {
-                    connection.sendUTF(message.utf8Data);
-                }
-                else if (message.type === 'binary') {
-                    connection.sendBytes(message.binaryData);
-                }
-            });
-            connection.on('close', function (reasonCode, description) {
-            });
-        });
+    getNewID() {
     }
     getAvailableField(player) {
         let field;
@@ -46,7 +21,8 @@ class Server {
         });
         return field;
     }
-    login(player) {
+    login(data) {
+        let player = new Player_1.Player(0, data);
         let field = this.getAvailableField(player);
         field.Login(player);
         player.field = field;

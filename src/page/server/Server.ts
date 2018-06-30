@@ -1,48 +1,21 @@
 import { Field } from "./field/Field";
 import { Player } from "./Player";
-import WebSocket = require("websocket");
-import Http = require("http");
-import WebSocketServer = WebSocket.server;
+import { ClientData } from "../common/ClientData";
 
 export class Server {
     public fieldList: Array<Field>
     public playerList: Array<Player>
-    public httpServer : Http.Server;
-    public wsServer: WebSocketServer;
     constructor() {
         this.fieldList = new Array<Field>()
-    }
-
-    public serverStart(){
-        this.httpServer = Http.createServer((request, response)=>{
-            response.writeHead(404);
-            response.end();
-        })
-        this.httpServer.listen(8080, function() {
-        });
-        this.wsServer = new WebSocketServer({
-            httpServer: this.httpServer,
-            autoAcceptConnections: false
-        });
-        this.wsServer.on('request', (request) =>{
-            var connection = request.accept('echo-protocol', request.origin);
-            connection.on('message', function(message) {
-                if (message.type === 'utf8') {
-                    connection.sendUTF(message.utf8Data);
-                }
-                else if (message.type === 'binary') {
-                    connection.sendBytes(message.binaryData);
-                }
-            });
-            connection.on('close', function(reasonCode, description) {
-            });
-        });
     }
 
     public onUpdate = () => {
         this.fieldList.forEach(field => {
             field.onSystemUpdate();
         });
+    }
+
+    public getNewID(){
     }
 
     public getAvailableField(player: Player): Field {
@@ -55,7 +28,8 @@ export class Server {
         return field;
     }
 
-    public login(player: Player) {
+    public login(data: ClientData) {
+        let player = new Player(0, data);
         let field = this.getAvailableField(player);
         field.Login(player);
         player.field = field;

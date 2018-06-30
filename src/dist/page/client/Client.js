@@ -4,7 +4,7 @@ const Controller_1 = require("./Controller");
 const Scene_1 = require("./scene/Scene");
 const DivManager_1 = require("./DivManager");
 class Client {
-    constructor(document, height, width) {
+    constructor(document, height, width, server) {
         this.onUpdate = () => {
             this.controller.onUpdate();
             this.rootScene.onSystemUpdate();
@@ -18,6 +18,7 @@ class Client {
         this.document.body.style.overflow = "hidden";
         this.height = height;
         this.width = width;
+        this.internalServer = server;
     }
     registerMainScene(scene) {
         this.rootScene = scene;

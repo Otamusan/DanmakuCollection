@@ -9,19 +9,17 @@ import { PFunc } from '../particle/PFunc';
 import { PFuncs } from '../particle/PFuncs';
 import { Shapes } from '../shape/Shapes';
 import { FieldGame } from '../../server/field/FieldGame';
+import { ClientData } from '../../common/ClientData';
 export class SceneGame extends Scene {
     public canvas: HTMLCanvasElement;
     public particleManager: ParticleManager;
     public ctx: CanvasRenderingContext2D;
-    public ws: WebSocket;
-    public serverField: FieldGame
+    public serverField: FieldGame;
+    public data:ClientData
     constructor(client: Client, div: HTMLDivElement, ws: WebSocket) {
-        super(client, div);
-        this.ws = ws;
-        this.ws.onmessage = (e)=>{
-            //this.serverField = e.data as FieldGame
-            console.log(e.data)
-        }
+        super(client, div)
+        this.data = new ClientData("test")
+        this.client.internalServer.login(this.data);
     }
     
     public initCanvas() {
@@ -36,9 +34,11 @@ export class SceneGame extends Scene {
         this.initCanvas();
     }
 
-    public onUpdate() {
-        
+    public syncServer(){
+        ;
+    }
 
+    public onUpdate() {
         this.particleManager.onUpdate();
         for (let i = 0; i < 1; i++) {
             let particle = new Particle(

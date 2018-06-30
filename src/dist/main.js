@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-/// <reference types="electron" />
 const Electron = require("electron");
 'use strict';
 Electron.app.commandLine.appendSwitch('disable-web-security');
@@ -27,5 +26,4 @@ Electron.app.on('ready', function () {
     this.window.setSkipTaskbar = true;
     this.window.setMenuBarVisibility(false);
 });
-console.log(4234234);
 //# sourceMappingURL=main.js.map

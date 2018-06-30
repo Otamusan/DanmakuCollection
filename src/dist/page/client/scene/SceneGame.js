@@ -8,14 +8,12 @@ const Color_1 = require("../../common/Color");
 const PFunc_1 = require("../particle/PFunc");
 const PFuncs_1 = require("../particle/PFuncs");
 const Shapes_1 = require("../shape/Shapes");
+const ClientData_1 = require("../../common/ClientData");
 class SceneGame extends Scene_1.Scene {
     constructor(client, div, ws) {
         super(client, div);
-        this.ws = ws;
-        this.ws.onmessage = (e) => {
-            //this.serverField = e.data as FieldGame
-            console.log(e.data);
-        };
+        this.data = new ClientData_1.ClientData("test");
+        this.client.internalServer.login(this.data);
     }
     initCanvas() {
         this.canvas = DOMHandler_1.DOMHandler.getElementByID(this.sceneDiv, "canvas");
@@ -26,6 +24,9 @@ class SceneGame extends Scene_1.Scene {
     }
     onTransitionedParentState(parentState) {
         this.initCanvas();
+    }
+    syncServer() {
+        ;
     }
     onUpdate() {
         this.particleManager.onUpdate();
