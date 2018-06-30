@@ -9,7 +9,6 @@ class Server {
             this.fieldList.forEach(field => {
                 field.onSystemUpdate();
             });
-            console.log(432423);
         };
         this.fieldList = new Array();
     }

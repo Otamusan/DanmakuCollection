@@ -1,4 +1,5 @@
 /// <reference types="electron" />
+import * as console from 'console';
 import Electron = require('electron');
 import { Server } from './page/server/Server';
 'use strict';

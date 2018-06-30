@@ -1,6 +1,8 @@
 import { Controller } from './Controller';
 import { Scene } from './scene/Scene';
 import { DivManager } from './DivManager';
+import { Server } from '../server/Server';
+import { server } from 'websocket';
 
 export class Client {
     public document: Document;
@@ -9,8 +11,8 @@ export class Client {
     public divManager: DivManager;
     public height: number;
     public width: number;
-
-    constructor(document: Document, height: number, width: number) {
+    public internalServer: Server;
+    constructor(document: Document, height: number, width: number, server: Server) {
         this.document = document;
         this.controller = new Controller(this.document);
         this.divManager = new DivManager(document);
@@ -20,6 +22,7 @@ export class Client {
         this.document.body.style.overflow = "hidden";
         this.height = height;
         this.width = width;
+        this.internalServer = server;
     }
 
     public registerMainScene(scene: Scene) {

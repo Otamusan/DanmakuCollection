@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference types="electron" />
 const Electron = require("electron");
-const Server_1 = require("./page/server/Server");
 'use strict';
 Electron.app.commandLine.appendSwitch('disable-web-security');
 Electron.app.on('window-all-closed', function () {
@@ -28,8 +27,5 @@ Electron.app.on('ready', function () {
     this.window.setSkipTaskbar = true;
     this.window.setMenuBarVisibility(false);
 });
-const server = new Server_1.Server();
-console.log(423423423);
-server.serverStart();
-setInterval(server.onUpdate, 1000 / 60);
+console.log(4234234);
 //# sourceMappingURL=main.js.map
