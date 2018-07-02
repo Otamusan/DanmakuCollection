@@ -1,12 +1,14 @@
-import { Field } from "./field/Field";
+import { Field } from './field/Field';
 import { Player } from "./Player";
 import { ClientData } from "../common/ClientData";
+import { PlayerManager } from './PlayerManager';
 
 export class Server {
     public fieldList: Array<Field>
-    public playerList: Array<Player>
+    public playerManager: PlayerManager
     constructor() {
         this.fieldList = new Array<Field>()
+        this.playerManager = new PlayerManager(100);
     }
 
     public onUpdate = () => {
@@ -15,7 +17,8 @@ export class Server {
         });
     }
 
-    public getNewID(){
+    public getPlayer(i):Player{
+        return this.playerManager.getPlayer(i);
     }
 
     public getAvailableField(player: Player): Field {
@@ -28,10 +31,15 @@ export class Server {
         return field;
     }
 
-    public login(data: ClientData) {
-        let player = new Player(0, data);
+    public setField(field:Field){
+        this.fieldList.push(field)
+    }
+
+    public login(data: ClientData):Player{
+        let player = new Player(data);
         let field = this.getAvailableField(player);
-        field.Login(player);
-        player.field = field;
+        this.playerManager.login(player);
+        field.addPlayer(player);
+        return player;
     }
 }

@@ -1,11 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class PlayerManager {
-    constructor() {
-        this.playerList = new Array();
+    constructor(max) {
+        this.max = max;
+        this.playerList = new Array(max);
+        //this.playerList.fill(null);
     }
-    Login(player) {
+    login(player) {
         this.playerList.push(player);
+    }
+    getPlayer(i) {
+        return this.playerList[i];
+    }
+    logout(i) {
+        this.playerList[i] = null;
     }
 }
 exports.PlayerManager = PlayerManager;

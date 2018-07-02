@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Player {
-    constructor(id, data) {
-        this.id = id;
+    constructor(data) {
         this.data = data;
     }
 }

@@ -3,11 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Client_1 = require("./client/Client");
 const SceneTitle_1 = require("./client/scene/SceneTitle");
 const Server_1 = require("./server/Server");
+const FieldGame_1 = require("./server/field/FieldGame");
 var main;
 (function (main) {
     const server = new Server_1.Server();
     const client = new Client_1.Client(document, 600, 800, server);
     const mainScene = new SceneTitle_1.SceneTitle(client, client.divManager.getDivCopy("title"));
+    server.setField(new FieldGame_1.FieldGame());
     mainScene.appendSceneDiv();
     client.registerMainScene(mainScene);
     setInterval(client.onUpdate, 1000 / 60);

@@ -1,12 +1,12 @@
 import { StateTree } from "../../common/StateTree";
 import { PlayerManager } from "../PlayerManager";
-import { Player } from "../Player";
+import { Player } from '../Player';
 
 export class Field extends StateTree {
-    public playerManager: PlayerManager
+    public playerList :Array<Player>;
     constructor(parent?: Field) {
         super(parent);
-        this.playerManager = new PlayerManager();
+        this.playerList = new Array;
     }
 
     public transitionSubState(subState: StateTree) {
@@ -19,7 +19,11 @@ export class Field extends StateTree {
         return true;
     }
 
-    public Login(player: Player) {
-        this.playerManager.Login(player);
+    public onPlayerLogined(player :Player){}
+
+    public addPlayer(player:Player){
+        this.playerList.push(player);
+        player.field=this;
+        this.onPlayerLogined(player)
     }
 }

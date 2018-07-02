@@ -10,18 +10,21 @@ import { PFuncs } from '../particle/PFuncs';
 import { Shapes } from '../shape/Shapes';
 import { FieldGame } from '../../server/field/FieldGame';
 import { ClientData } from '../../common/ClientData';
+import { Field } from '../../server/field/Field';
+import { Player } from '../../server/Player';
 export class SceneGame extends Scene {
     public canvas: HTMLCanvasElement;
     public particleManager: ParticleManager;
     public ctx: CanvasRenderingContext2D;
-    public serverField: FieldGame;
-    public data:ClientData
-    constructor(client: Client, div: HTMLDivElement, ws: WebSocket) {
+    public serverField: Field;
+    public data: ClientData
+    public player: Player
+    constructor(client: Client, div: HTMLDivElement, ws?: WebSocket) {
         super(client, div)
         this.data = new ClientData("test")
-        this.client.internalServer.login(this.data);
+        this.player = this.client.internalServer.login(this.data);
     }
-    
+
     public initCanvas() {
         this.canvas = DOMHandler.getElementByID<HTMLCanvasElement>(this.sceneDiv, "canvas");
         this.canvas.width = this.client.width;
@@ -34,11 +37,17 @@ export class SceneGame extends Scene {
         this.initCanvas();
     }
 
-    public syncServer(){
-        ;
+    public syncServer() {
+        console.log(this.player)
+        this.serverField = this.player.field;
+        this.player.controller = this.client.controller;
     }
 
     public onUpdate() {
+        this.syncServer();
+        if (this.serverField instanceof FieldGame) {
+            console.log(this.serverField.EntityList)
+        }
         this.particleManager.onUpdate();
         for (let i = 0; i < 1; i++) {
             let particle = new Particle(
@@ -53,10 +62,6 @@ export class SceneGame extends Scene {
                 0.5);
             this.particleManager.spawnParticle(particle);
         }
-    }
-
-    public sendInfoToServer() {
-
     }
 
     public onDrawUpdate() {

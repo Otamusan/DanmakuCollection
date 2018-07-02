@@ -7,6 +7,7 @@ import { DivManager } from '../DivManager';
 export class SceneConnect extends Scene {
     private textbox: HTMLInputElement;
     private decision: HTMLInputElement;
+    private local: HTMLInputElement;
     private state: HTMLParagraphElement;
     public game: SceneGame;
     public ws: WebSocket
@@ -14,9 +15,14 @@ export class SceneConnect extends Scene {
     constructor(client: Client, div: HTMLDivElement, parentScene?: Scene) {
         super(client, div, parentScene)
         this.textbox = DOMHandler.getElementByID<HTMLInputElement>(this.sceneDiv, "address")
+        this.local = DOMHandler.getElementByID<HTMLInputElement>(this.sceneDiv, "local")
         this.decision = DOMHandler.getElementByID<HTMLInputElement>(this.sceneDiv, "decision")
         this.state = DOMHandler.getElementByID<HTMLParagraphElement>(this.sceneDiv, "state")
         this.decision.onclick = this.isButtonPushed;
+        this.local.onclick=()=>{
+            this.game = new SceneGame(this.client, this.client.divManager.getDivCopy("game"));
+            this.transitionSubState(this.game);
+        }
     }
 
     public getAddress(): string {

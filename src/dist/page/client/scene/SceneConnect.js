@@ -15,9 +15,14 @@ class SceneConnect extends Scene_1.Scene {
             };
         };
         this.textbox = DOMHandler_1.DOMHandler.getElementByID(this.sceneDiv, "address");
+        this.local = DOMHandler_1.DOMHandler.getElementByID(this.sceneDiv, "local");
         this.decision = DOMHandler_1.DOMHandler.getElementByID(this.sceneDiv, "decision");
         this.state = DOMHandler_1.DOMHandler.getElementByID(this.sceneDiv, "state");
         this.decision.onclick = this.isButtonPushed;
+        this.local.onclick = () => {
+            this.game = new SceneGame_1.SceneGame(this.client, this.client.divManager.getDivCopy("game"));
+            this.transitionSubState(this.game);
+        };
     }
     getAddress() {
         return this.textbox.value;
