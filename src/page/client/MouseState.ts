@@ -37,11 +37,11 @@ export class MouseState {
     }
     // 現在のマウスの座標
     public getCoord(): Coord {
-        return this.currentCoord;
+        return this.currentCoord.copy();
     }
     // 1フレーム前のマウスの座標
     public getPreviousCoord(): Coord {
-        return this.previousCoord;
+        return this.previousCoord.copy();
     }
 
 

@@ -12,8 +12,16 @@ export class Coord {
         return new Coord(x, y);
     }
 
+    public getRadian():number{
+        return Math.atan2(this.x,this.y);
+    }
+
     public getDistance(otherCoord: Coord): number {
         return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
+    }
+
+    public getLength(){
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
     }
 
     public isEqual(other: Coord): boolean {
@@ -24,9 +32,25 @@ export class Coord {
         return new Coord(this.x, this.y);
     }
 
+    public getUnitVector():Coord{
+        return this.copy().divide(this.copy().getLength())
+    }
+
+    public setLength(n:number):Coord{
+        this.x=this.copy().getUnitVector().multiply(n).x;
+        this.y=this.copy().getUnitVector().multiply(n).y;
+        return this;
+    }
+
     public subtractCoord(other: Coord): Coord {
         this.x -= other.x;
         this.y -= other.y;
+        return this;
+    }
+
+    public divide(d:number): Coord {
+        this.x /= d;
+        this.y /= d;
         return this;
     }
 
@@ -36,7 +60,7 @@ export class Coord {
         return this;
     }
 
-    public multiplyCoord(n: number): Coord {
+    public multiply(n: number): Coord {
         this.x *= n;
         this.y *= n;
         return this;

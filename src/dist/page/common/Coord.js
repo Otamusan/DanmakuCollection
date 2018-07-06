@@ -10,8 +10,14 @@ class Coord {
         let y = Math.sin(rad) * length;
         return new Coord(x, y);
     }
+    getRadian() {
+        return Math.atan2(this.x, this.y);
+    }
     getDistance(otherCoord) {
         return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
+    }
+    getLength() {
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
     }
     isEqual(other) {
         return other.x == this.x && other.y == this.y;
@@ -19,9 +25,22 @@ class Coord {
     copy() {
         return new Coord(this.x, this.y);
     }
+    getUnitVector() {
+        return this.copy().divide(this.copy().getLength());
+    }
+    setLength(n) {
+        this.x = this.copy().getUnitVector().multiply(n).x;
+        this.y = this.copy().getUnitVector().multiply(n).y;
+        return this;
+    }
     subtractCoord(other) {
         this.x -= other.x;
         this.y -= other.y;
+        return this;
+    }
+    divide(d) {
+        this.x /= d;
+        this.y /= d;
         return this;
     }
     addCoord(other) {
@@ -29,7 +48,7 @@ class Coord {
         this.y += other.y;
         return this;
     }
-    multiplyCoord(n) {
+    multiply(n) {
         this.x *= n;
         this.y *= n;
         return this;

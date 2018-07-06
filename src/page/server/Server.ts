@@ -16,7 +16,6 @@ export class Server {
             field.onSystemUpdate();
         });
     }
-
     public getPlayer(i):Player{
         return this.playerManager.getPlayer(i);
     }

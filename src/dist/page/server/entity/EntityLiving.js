@@ -2,13 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Entity_1 = require("./Entity");
 class EntityLiving extends Entity_1.Entity {
-    constructor(maxHp) {
-        super();
+    constructor(field, maxHp) {
+        super(field);
         this.maxHp = maxHp;
         this.hp = maxHp;
+        this.weight = this.maxHp / 10;
     }
     onUpdate() {
-        this.coord.addCoord(this.vector.copy());
+        super.onUpdate();
     }
     addDamaged(n) {
         this.hp -= n;
@@ -21,9 +22,6 @@ class EntityLiving extends Entity_1.Entity {
     }
     getMaxHP() {
         return this.maxHp;
-    }
-    getVector() {
-        return this.coord;
     }
 }
 exports.EntityLiving = EntityLiving;

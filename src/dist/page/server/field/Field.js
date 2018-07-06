@@ -5,6 +5,19 @@ class Field extends StateTree_1.StateTree {
     constructor(parent) {
         super(parent);
         this.playerList = new Array;
+        this.EntityList = new Array();
+    }
+    onPlayerLogined(player) { }
+    spawnEntity(entity) {
+        this.EntityList.push(entity);
+    }
+    onUpdate() {
+        this.EntityList.forEach((entity, i) => {
+            entity.onUpdate();
+            if (entity.isDead) {
+                this.EntityList[i] = null;
+            }
+        });
     }
     transitionSubState(subState) {
         if (!(subState instanceof Field))
@@ -15,11 +28,11 @@ class Field extends StateTree_1.StateTree {
     canLogin(play) {
         return true;
     }
-    onPlayerLogined(player) { }
     addPlayer(player) {
         this.playerList.push(player);
         player.field = this;
         this.onPlayerLogined(player);
+        console.log(player);
     }
 }
 exports.Field = Field;

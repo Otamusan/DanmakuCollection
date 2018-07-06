@@ -8,8 +8,9 @@ const Color_1 = require("../../common/Color");
 const PFunc_1 = require("../particle/PFunc");
 const PFuncs_1 = require("../particle/PFuncs");
 const Shapes_1 = require("../shape/Shapes");
-const FieldGame_1 = require("../../server/field/FieldGame");
 const ClientData_1 = require("../../common/ClientData");
+const EntityPlayer_1 = require("../../server/entity/EntityPlayer");
+const EntityBullet_1 = require("../../server/entity/EntityBullet");
 class SceneGame extends Scene_1.Scene {
     constructor(client, div, ws) {
         super(client, div);
@@ -27,24 +28,31 @@ class SceneGame extends Scene_1.Scene {
         this.initCanvas();
     }
     syncServer() {
-        console.log(this.player);
         this.serverField = this.player.field;
         this.player.controller = this.client.controller;
     }
     onUpdate() {
         this.syncServer();
-        if (this.serverField instanceof FieldGame_1.FieldGame) {
-            console.log(this.serverField.EntityList);
-        }
         this.particleManager.onUpdate();
         for (let i = 0; i < 1; i++) {
-            let particle = new Particle_1.Particle(Color_1.Color.createFromHSV(80 + Math.random() * 40 - 20, 1, 1), this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy()).multiplyCoord(Math.random() / 10), this.getMouse().getCoord().copy(), 100 * Math.random(), 100, new PFunc_1.PFunc([PFuncs_1.PFuncs.FADE, PFuncs_1.PFuncs.SHRINK, PFuncs_1.PFuncs.DECELERATION1_1]), Shapes_1.Shapes.SQUARE, Math.random() * 2 * Math.PI, 0.5);
+            let particle = new Particle_1.Particle(Color_1.Color.createFromHSV(80 + Math.random() * 40 - 20, 1, 1), this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy()).multiply(Math.random() / 10), this.getMouse().getCoord().copy(), 100 * Math.random(), 20, new PFunc_1.PFunc([PFuncs_1.PFuncs.FADE, PFuncs_1.PFuncs.SHRINK, PFuncs_1.PFuncs.DECELERATION1_1]), Shapes_1.Shapes.SQUARE, Math.random() * 2 * Math.PI, 0.5);
             this.particleManager.spawnParticle(particle);
         }
     }
     onDrawUpdate() {
         this.DrawBackGround(new Color_1.Color(0, 0, 0));
         this.particleManager.onDrawUpdate();
+        this.drawEntities(this.serverField.EntityList);
+    }
+    drawEntities(list) {
+        list.forEach(entity => {
+            if (entity instanceof EntityPlayer_1.EntityPlayer) {
+                Shapes_1.Shapes.CIRCLE.draw(entity.coord, new Color_1.Color(256, 256, 256), entity.getMaxHP(), 0, 1, this.ctx);
+            }
+            else if (entity instanceof EntityBullet_1.EntityBullet) {
+                Shapes_1.Shapes.CIRCLE.draw(entity.coord, new Color_1.Color(0, 256, 256), entity.getHP(), 0, 1, this.ctx);
+            }
+        });
     }
     DrawBackGround(color) {
         this.ctx.fillStyle = color.getString();

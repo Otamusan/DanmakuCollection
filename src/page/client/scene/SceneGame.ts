@@ -12,6 +12,10 @@ import { FieldGame } from '../../server/field/FieldGame';
 import { ClientData } from '../../common/ClientData';
 import { Field } from '../../server/field/Field';
 import { Player } from '../../server/Player';
+import { Controller } from '../Controller';
+import { Entity } from '../../server/entity/Entity';
+import { EntityPlayer } from '../../server/entity/EntityPlayer';
+import { EntityBullet } from '../../server/entity/EntityBullet';
 export class SceneGame extends Scene {
     public canvas: HTMLCanvasElement;
     public particleManager: ParticleManager;
@@ -38,24 +42,20 @@ export class SceneGame extends Scene {
     }
 
     public syncServer() {
-        console.log(this.player)
         this.serverField = this.player.field;
         this.player.controller = this.client.controller;
     }
 
     public onUpdate() {
         this.syncServer();
-        if (this.serverField instanceof FieldGame) {
-            console.log(this.serverField.EntityList)
-        }
         this.particleManager.onUpdate();
         for (let i = 0; i < 1; i++) {
             let particle = new Particle(
                 Color.createFromHSV(80 + Math.random() * 40 - 20, 1, 1),
-                this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy()).multiplyCoord(Math.random() / 10),
+                this.getMouse().getCoord().copy().subtractCoord(this.getMouse().getPreviousCoord().copy()).multiply(Math.random() / 10),
                 this.getMouse().getCoord().copy(),
                 100 * Math.random(),
-                100,
+                20,
                 new PFunc([PFuncs.FADE, PFuncs.SHRINK, PFuncs.DECELERATION1_1]),
                 Shapes.SQUARE,
                 Math.random() * 2 * Math.PI,
@@ -67,6 +67,19 @@ export class SceneGame extends Scene {
     public onDrawUpdate() {
         this.DrawBackGround(new Color(0, 0, 0));
         this.particleManager.onDrawUpdate();
+
+        this.drawEntities(this.serverField.EntityList);
+        
+    }
+
+    public drawEntities(list :Array<Entity>){
+        list.forEach(entity => {
+            if (entity instanceof EntityPlayer){
+                Shapes.CIRCLE.draw(entity.coord,new Color(256,256,256),entity.getMaxHP(),0,1,this.ctx)
+            }else if(entity instanceof EntityBullet){
+                Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,1,this.ctx)
+            }
+        });
     }
 
     public DrawBackGround(color: Color) {
