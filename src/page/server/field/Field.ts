@@ -17,13 +17,15 @@ export class Field extends StateTree {
 
     public spawnEntity(entity:Entity){
         this.EntityList.push(entity);
+        entity.onSpawned();
     }
 
     public onUpdate() {
         this.EntityList.forEach((entity, i) => {
             entity.onUpdate();
             if (entity.isDead) {
-                this.EntityList[i] = null;
+                //this.EntityList[i] = null;
+                this.EntityList.splice(i,1)
             }
         });
     }

@@ -29,8 +29,9 @@ class Coord {
         return this.copy().divide(this.copy().getLength());
     }
     setLength(n) {
-        this.x = this.copy().getUnitVector().multiply(n).x;
-        this.y = this.copy().getUnitVector().multiply(n).y;
+        let coord = this.copy().getUnitVector().multiply(n);
+        this.x = coord.x;
+        this.y = coord.y;
         return this;
     }
     subtractCoord(other) {

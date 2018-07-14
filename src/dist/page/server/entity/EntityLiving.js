@@ -6,7 +6,6 @@ class EntityLiving extends Entity_1.Entity {
         super(field);
         this.maxHp = maxHp;
         this.hp = maxHp;
-        this.weight = this.maxHp / 10;
     }
     onUpdate() {
         super.onUpdate();

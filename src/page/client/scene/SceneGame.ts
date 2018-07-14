@@ -15,7 +15,8 @@ import { Player } from '../../server/Player';
 import { Controller } from '../Controller';
 import { Entity } from '../../server/entity/Entity';
 import { EntityPlayer } from '../../server/entity/EntityPlayer';
-import { EntityBullet } from '../../server/entity/EntityBullet';
+import { EntityBullet } from '../../server/entity/bullet/EntityBullet';
+import { BulletState } from '../../server/entity/bullet/BulletState';
 export class SceneGame extends Scene {
     public canvas: HTMLCanvasElement;
     public particleManager: ParticleManager;
@@ -77,13 +78,19 @@ export class SceneGame extends Scene {
             if (entity instanceof EntityPlayer){
                 Shapes.CIRCLE.draw(entity.coord,new Color(256,256,256),entity.getMaxHP(),0,1,this.ctx)
             }else if(entity instanceof EntityBullet){
-                Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,1,this.ctx)
+                
+                if (entity.state!=BulletState.FADE){
+                    Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,1,this.ctx)
+                }else{
+                    Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,entity.hp/entity.maxHp,this.ctx)
+                }
             }
         });
     }
 
     public DrawBackGround(color: Color) {
         this.ctx.fillStyle = color.getString();
+        this.ctx.globalAlpha =1;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }

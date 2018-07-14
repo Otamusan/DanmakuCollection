@@ -10,7 +10,8 @@ const PFuncs_1 = require("../particle/PFuncs");
 const Shapes_1 = require("../shape/Shapes");
 const ClientData_1 = require("../../common/ClientData");
 const EntityPlayer_1 = require("../../server/entity/EntityPlayer");
-const EntityBullet_1 = require("../../server/entity/EntityBullet");
+const EntityBullet_1 = require("../../server/entity/bullet/EntityBullet");
+const BulletState_1 = require("../../server/entity/bullet/BulletState");
 class SceneGame extends Scene_1.Scene {
     constructor(client, div, ws) {
         super(client, div);
@@ -50,12 +51,18 @@ class SceneGame extends Scene_1.Scene {
                 Shapes_1.Shapes.CIRCLE.draw(entity.coord, new Color_1.Color(256, 256, 256), entity.getMaxHP(), 0, 1, this.ctx);
             }
             else if (entity instanceof EntityBullet_1.EntityBullet) {
-                Shapes_1.Shapes.CIRCLE.draw(entity.coord, new Color_1.Color(0, 256, 256), entity.getHP(), 0, 1, this.ctx);
+                if (entity.state != BulletState_1.BulletState.FADE) {
+                    Shapes_1.Shapes.CIRCLE.draw(entity.coord, new Color_1.Color(0, 256, 256), entity.getHP(), 0, 1, this.ctx);
+                }
+                else {
+                    Shapes_1.Shapes.CIRCLE.draw(entity.coord, new Color_1.Color(0, 256, 256), entity.getHP(), 0, entity.hp / entity.maxHp, this.ctx);
+                }
             }
         });
     }
     DrawBackGround(color) {
         this.ctx.fillStyle = color.getString();
+        this.ctx.globalAlpha = 1;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }

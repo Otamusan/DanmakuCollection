@@ -9,7 +9,6 @@ export class EntityLiving extends Entity {
         super(field);
         this.maxHp = maxHp;
         this.hp = maxHp;
-        this.weight = this.maxHp/10;
     }
 
     public onUpdate() {

@@ -10,12 +10,14 @@ class Field extends StateTree_1.StateTree {
     onPlayerLogined(player) { }
     spawnEntity(entity) {
         this.EntityList.push(entity);
+        entity.onSpawned();
     }
     onUpdate() {
         this.EntityList.forEach((entity, i) => {
             entity.onUpdate();
             if (entity.isDead) {
-                this.EntityList[i] = null;
+                //this.EntityList[i] = null;
+                this.EntityList.splice(i, 1);
             }
         });
     }

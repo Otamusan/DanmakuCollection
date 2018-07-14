@@ -37,8 +37,9 @@ export class Coord {
     }
 
     public setLength(n:number):Coord{
-        this.x=this.copy().getUnitVector().multiply(n).x;
-        this.y=this.copy().getUnitVector().multiply(n).y;
+        let coord = this.copy().getUnitVector().multiply(n);
+        this.x=coord.x;
+        this.y=coord.y;
         return this;
     }
 
