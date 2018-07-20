@@ -6,6 +6,7 @@ import { EntityBullet } from "./bullet/EntityBullet";
 import { Field } from "../field/Field";
 import { PhysicsHelper } from './PhysicsHelper';
 import { ShapeCircle } from '../../client/shape/ShapeCircle';
+import { Bullet } from "./bullet/Bullet";
 
 export class EntityPlayer extends EntityLiving {
     public player: Player;
@@ -35,11 +36,11 @@ export class EntityPlayer extends EntityLiving {
         this.physics.setTransitionToCoord(this.coord);
         let mouse = this.getPointerCoord();
         if (this.isPlayerClicked(0)){
-            let bullet = new EntityBullet(this.field,200)
-            //bullet.physics.addForce(mouse.copy().subtractCoord(this.coord.copy()).getUnitVector().multiply(20));
-            bullet.physics.addForce(mouse.copy().subtractCoord(this.coord.copy()).setLength(20));
+            let bullet = new EntityBullet(this.field,new Bullet(10,100,5))
+
+            bullet.physics.speed.addCoord(mouse.copy().subtractCoord(this.coord.copy()).setLength(bullet.bullet.getSpeed()));
             bullet.coord = this.coord.copy();
-            bullet.physics.speed = this.physics.speed.copy();
+            bullet.physics.speed.addCoord(this.physics.speed.copy());
             this.field.spawnEntity(bullet)
         }
         if (mouse.copy().subtractCoord(this.coord.copy()).getLength() < this.maxForce) {
