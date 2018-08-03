@@ -10,8 +10,16 @@ class Coord {
         let y = Math.sin(rad) * length;
         return new Coord(x, y);
     }
+    static createFromAngle(angle, length) {
+        let x = Math.cos(angle * Math.PI / 180) * length;
+        let y = Math.sin(angle * Math.PI / 180) * length;
+        return new Coord(x, y);
+    }
     getRadian() {
-        return Math.atan2(this.x, this.y);
+        return Math.atan2(this.y, this.x);
+    }
+    getAngle() {
+        return Math.atan2(this.y, this.x) * 180 / Math.PI;
     }
     getDistance(otherCoord) {
         return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));

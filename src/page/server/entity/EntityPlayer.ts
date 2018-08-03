@@ -6,19 +6,22 @@ import { EntityBullet } from "./bullet/EntityBullet";
 import { Field } from "../field/Field";
 import { PhysicsHelper } from './PhysicsHelper';
 import { ShapeCircle } from '../../client/shape/ShapeCircle';
-import { Bullet } from "./bullet/Bullet";
+import { Bullet } from './bullet/Bullet';
+import { Barrage } from './bullet/Barrage';
+import { Bmodi } from './bullet/modification/BModi';
+import { EntityManager } from '../field/EntityManager';
 
 export class EntityPlayer extends EntityLiving {
     public player: Player;
-    public maxForce: number; //操作したときのかかる力の最大
+    public maxDistance: number; //自機とカーソルの距離の最大
     public physics : PhysicsHelper;
-    constructor(field:Field,player: Player, maxHp: number) {
-        super(field,maxHp);
+    constructor(entityManager:EntityManager,player: Player, maxHp: number) {
+        super(entityManager,maxHp);
         this.physics = new PhysicsHelper();
         this.player = player;
         this.physics.weight = this.maxHp/10;
         this.physics.speedLimit = 0
-        this.maxForce = 100
+        this.maxDistance = 100
         this.physics.k = 0.1
     }
 
@@ -30,23 +33,23 @@ export class EntityPlayer extends EntityLiving {
         return this.player.controller.getMouseState().isMousePressed(n);
     }
 
+    public getMouseToPlayer(){
+        let mouse = this.getPointerCoord();
+        if (mouse.copy().subtractCoord(this.coord.copy()).getLength() < this.maxDistance) {
+            return mouse.copy().subtractCoord(this.coord.copy())
+        } else {
+            return mouse.copy().subtractCoord(this.coord.copy()).setLength(this.maxDistance)
+        }
+    }
+
     public onUpdate() {
         super.onUpdate()
         this.physics.onUpdate();
         this.physics.setTransitionToCoord(this.coord);
-        let mouse = this.getPointerCoord();
         if (this.isPlayerClicked(0)){
-            let bullet = new EntityBullet(this.field,new Bullet(10,100,5))
-
-            bullet.physics.speed.addCoord(mouse.copy().subtractCoord(this.coord.copy()).setLength(bullet.bullet.getSpeed()));
-            bullet.coord = this.coord.copy();
-            bullet.physics.speed.addCoord(this.physics.speed.copy());
-            this.field.spawnEntity(bullet)
+            let bullet = new Barrage(new Barrage(new Bullet(20,100,10),10,new Bmodi(0,30,0.5,0,3)),10,new Bmodi(0,0,0,10,0))
+            bullet.spawn(this.entityManager,this.coord,this.getMouseToPlayer().getAngle(),0);
         }
-        if (mouse.copy().subtractCoord(this.coord.copy()).getLength() < this.maxForce) {
-            this.physics.addForce(mouse.copy().subtractCoord(this.coord.copy()))
-        } else {
-            this.physics.addForce(mouse.copy().subtractCoord(this.coord.copy()).setLength(this.maxForce))
-        }
+        this.physics.addForce(this.getMouseToPlayer())
     }
 }

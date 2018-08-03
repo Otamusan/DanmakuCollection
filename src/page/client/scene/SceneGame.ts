@@ -69,7 +69,7 @@ export class SceneGame extends Scene {
         this.DrawBackGround(new Color(0, 0, 0));
         this.particleManager.onDrawUpdate();
 
-        this.drawEntities(this.serverField.EntityList);
+        this.drawEntities(this.serverField.getEntityManager().getEntityList());
         
     }
 

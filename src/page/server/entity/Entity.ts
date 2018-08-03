@@ -1,14 +1,16 @@
-import { Coord } from "../../common/Coord";
+import { Coord } from '../../common/Coord';
 import { Field } from "../field/Field";
+import { EntityManager } from '../field/EntityManager';
 
 export class Entity {
     public coord: Coord;
+    public prevCoord: Coord;
     public isDead: boolean;
 
-    public field: Field;
-    constructor(field: Field) {
+    public entityManager: EntityManager;
+    constructor(entityManager: EntityManager) {
         this.coord = new Coord(0,0);
-        this.field = field;
+        this.entityManager = entityManager;
     }
 
     public onUpdate() {
@@ -18,6 +20,10 @@ export class Entity {
 
     public getCoord(): Coord {
         return this.coord.copy();
+    }
+
+    public getCoordReference():Coord{
+        return this.coord;
     }
 
     public setCoord(coord: Coord) {

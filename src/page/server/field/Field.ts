@@ -2,32 +2,25 @@ import { StateTree } from "../../common/StateTree";
 import { PlayerManager } from "../PlayerManager";
 import { Player } from '../Player';
 import { Entity } from "../entity/Entity";
+import { EntityManager } from './EntityManager';
 
 export class Field extends StateTree {
     public playerList :Array<Player>;
-    public EntityList: Array<Entity>;
-
+    private entityManager:EntityManager;
     constructor(parent?: Field) {
         super(parent);
+        this.entityManager = new EntityManager();
         this.playerList = new Array;
-        this.EntityList = new Array<Entity>();
+    }
+
+    public getEntityManager():EntityManager{
+        return this.entityManager;
     }
 
     public onPlayerLogined(player: Player){}
 
-    public spawnEntity(entity:Entity){
-        this.EntityList.push(entity);
-        entity.onSpawned();
-    }
-
     public onUpdate() {
-        this.EntityList.forEach((entity, i) => {
-            entity.onUpdate();
-            if (entity.isDead) {
-                //this.EntityList[i] = null;
-                this.EntityList.splice(i,1)
-            }
-        });
+        this.entityManager.onUpdate();
     }
 
     public transitionSubState(subState: StateTree) {

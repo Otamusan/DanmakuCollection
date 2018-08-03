@@ -12,8 +12,18 @@ export class Coord {
         return new Coord(x, y);
     }
 
+    public static createFromAngle(angle: number, length: number): Coord {
+        let x = Math.cos(angle*Math.PI/180) * length;
+        let y = Math.sin(angle*Math.PI/180) * length;
+        return new Coord(x, y);
+    }
+
     public getRadian():number{
-        return Math.atan2(this.x,this.y);
+        return Math.atan2(this.y,this.x);
+    }
+
+    public getAngle():number{
+        return Math.atan2(this.y,this.x)*180/Math.PI;
     }
 
     public getDistance(otherCoord: Coord): number {

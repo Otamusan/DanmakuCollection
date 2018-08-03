@@ -43,7 +43,7 @@ class SceneGame extends Scene_1.Scene {
     onDrawUpdate() {
         this.DrawBackGround(new Color_1.Color(0, 0, 0));
         this.particleManager.onDrawUpdate();
-        this.drawEntities(this.serverField.EntityList);
+        this.drawEntities(this.serverField.getEntityManager().getEntityList());
     }
     drawEntities(list) {
         list.forEach(entity => {

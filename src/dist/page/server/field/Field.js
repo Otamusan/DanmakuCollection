@@ -1,25 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const StateTree_1 = require("../../common/StateTree");
+const EntityManager_1 = require("./EntityManager");
 class Field extends StateTree_1.StateTree {
     constructor(parent) {
         super(parent);
+        this.entityManager = new EntityManager_1.EntityManager();
         this.playerList = new Array;
-        this.EntityList = new Array();
+    }
+    getEntityManager() {
+        return this.entityManager;
     }
     onPlayerLogined(player) { }
-    spawnEntity(entity) {
-        this.EntityList.push(entity);
-        entity.onSpawned();
-    }
     onUpdate() {
-        this.EntityList.forEach((entity, i) => {
-            entity.onUpdate();
-            if (entity.isDead) {
-                //this.EntityList[i] = null;
-                this.EntityList.splice(i, 1);
-            }
-        });
+        this.entityManager.onUpdate();
     }
     transitionSubState(subState) {
         if (!(subState instanceof Field))
