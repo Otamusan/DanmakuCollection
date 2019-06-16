@@ -36,12 +36,8 @@ export class Bullet implements IBullet{
     public spawn(entitymanager:EntityManager,coord:Coord,angle:number,spawntime:number){
         let bullet = new EntityBullet(entitymanager,this)
         bullet.physics.setSpeed(Coord.createFromAngle(angle,this.speed))
-        if (spawntime!=0){
-            entitymanager.spawnEntityWithLag(bullet,spawntime,coord);
-        }else{
-            bullet.setCoord(coord);
-            entitymanager.spawnEntity(bullet)
-        }
+        bullet.setCoord(coord.copy())
+        entitymanager.spawnEntityWithLag(bullet,spawntime,coord);
     }
 
     public copy():IBullet{

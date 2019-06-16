@@ -4,7 +4,7 @@ const EntityLiving_1 = require("./EntityLiving");
 const PhysicsHelper_1 = require("./PhysicsHelper");
 const Bullet_1 = require("./bullet/Bullet");
 const Barrage_1 = require("./bullet/Barrage");
-const BModi_1 = require("./bullet/modification/BModi");
+const Bmodi_1 = require("./bullet/modification/Bmodi");
 class EntityPlayer extends EntityLiving_1.EntityLiving {
     constructor(entityManager, player, maxHp) {
         super(entityManager, maxHp);
@@ -34,8 +34,12 @@ class EntityPlayer extends EntityLiving_1.EntityLiving {
         super.onUpdate();
         this.physics.onUpdate();
         this.physics.setTransitionToCoord(this.coord);
-        if (this.isPlayerClicked(0)) {
-            let bullet = new Barrage_1.Barrage(new Barrage_1.Barrage(new Bullet_1.Bullet(20, 100, 10), 10, new BModi_1.Bmodi(0, 30, 0.5, 0, 3)), 10, new BModi_1.Bmodi(0, 0, 0, 10, 0));
+        if (this.player.controller.getKeyState().isKeyDown(38)) {
+            //let bullet = new Barrage(new Barrage(new Bullet(50,50,10),5,new Bmodi(0,100,-1,0,0)),2,new Bmodi(0,0,0,0,20))
+            //let bullet = new Barrage(new Barrage(new Barrage(new Bullet(50,500,5),2,new Bmodi(0,-300,0,0,5)),36,new Bmodi(0,0,0,10,0)),1,new Bmodi(0,0,0,36,1))
+            //let bullet = new Bullet(50,500,1)
+            //let bullet = new Barrage(new Barrage(new Barrage(new Bullet(10,50,5),50,new Bmodi(0,50,0.5,0,0)),6,new Bmodi(0,0,0,60,0)),3,new Bmodi(0,0,0,20,20))
+            let bullet = new Barrage_1.Barrage(new Bullet_1.Bullet(10, 50, 5), 50, new Bmodi_1.Bmodi(0, 0, 1, 0, 0));
             bullet.spawn(this.entityManager, this.coord, this.getMouseToPlayer().getAngle(), 0);
         }
         this.physics.addForce(this.getMouseToPlayer());

@@ -6,6 +6,10 @@ export class Coord {
         this.y = y;
     }
 
+    public isZero(): boolean {
+        return this.x == 0 && this.y == 0;
+    }
+
     public static createFromRadian(rad: number, length: number): Coord {
         let x = Math.cos(rad) * length;
         let y = Math.sin(rad) * length;
@@ -13,24 +17,24 @@ export class Coord {
     }
 
     public static createFromAngle(angle: number, length: number): Coord {
-        let x = Math.cos(angle*Math.PI/180) * length;
-        let y = Math.sin(angle*Math.PI/180) * length;
+        let x = Math.cos(angle * Math.PI / 180) * length;
+        let y = Math.sin(angle * Math.PI / 180) * length;
         return new Coord(x, y);
     }
 
-    public getRadian():number{
-        return Math.atan2(this.y,this.x);
+    public getRadian(): number {
+        return Math.atan2(this.y, this.x);
     }
 
-    public getAngle():number{
-        return Math.atan2(this.y,this.x)*180/Math.PI;
+    public getAngle(): number {
+        return Math.atan2(this.y, this.x) * 180 / Math.PI;
     }
 
     public getDistance(otherCoord: Coord): number {
         return Math.sqrt(Math.pow(this.x - otherCoord.x, 2) + Math.pow(this.y - otherCoord.y, 2));
     }
 
-    public getLength(){
+    public getLength() {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
     }
 
@@ -42,14 +46,22 @@ export class Coord {
         return new Coord(this.x, this.y);
     }
 
-    public getUnitVector():Coord{
-        return this.copy().divide(this.copy().getLength())
+    public getUnitVector(): Coord {
+        if (!this.isZero()) {
+            return this.copy().divide(this.copy().getLength())
+        }else{
+            //throw new Error("This is a zero vector")
+        }
     }
 
-    public setLength(n:number):Coord{
-        let coord = this.copy().getUnitVector().multiply(n);
-        this.x=coord.x;
-        this.y=coord.y;
+    public setLength(n: number): Coord {
+        if (!this.isZero()) {
+            let coord = this.copy().getUnitVector().multiply(n);
+            this.x = coord.x;
+            this.y = coord.y;
+        }else{
+            //throw new Error("This is a zero vector")
+        }
         return this;
     }
 
@@ -59,7 +71,7 @@ export class Coord {
         return this;
     }
 
-    public divide(d:number): Coord {
+    public divide(d: number): Coord {
         this.x /= d;
         this.y /= d;
         return this;

@@ -1,14 +1,14 @@
 import { EntityLiving } from "../EntityLiving";
 import { PhysicsHelper } from "../PhysicsHelper";
 import { Field } from "../../field/Field";
-import { BulletState } from "./BulletState";
 import { Bullet } from './Bullet';
 import { EntityManager } from '../../field/EntityManager';
+import { EnumBulletState } from './EnumBulletState';
 
 
 export class EntityBullet extends EntityLiving{
     public physics: PhysicsHelper;
-    public state: Symbol;
+    public state: EnumBulletState;
     public time: number;//スポーンしてから立ったtick数
     public maxTime: number;//存在できるtick数
     public fadeHPRate: number;//fade状態になった時のHPの減少する割合
@@ -27,10 +27,10 @@ export class EntityBullet extends EntityLiving{
     public onUpdate(){
         super.onUpdate();
         this.time++;
-        if (this.time>=this.bullet.getMaxTime()){
-            this.state = BulletState.FADE;
+        if (this.state == EnumBulletState.NORMAL && this.time>=this.bullet.getMaxTime()){
+            this.state = EnumBulletState.FADE;
         }
-        if (this.state == BulletState.FADE){
+        if (this.state == EnumBulletState.FADE){
             this.hp-=this.maxHp*this.fadeHPRate
             this.physics.speed.setLength(this.physics.speed.getLength()-this.bullet.getSpeed()*this.fadeSpeedRate);
         }
@@ -39,7 +39,7 @@ export class EntityBullet extends EntityLiving{
     }
 
     public onSpawned(){
-        this.state = BulletState.NORMAL
+        this.state = EnumBulletState.NORMAL
     }
 
 }

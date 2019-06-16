@@ -7,6 +7,7 @@ class EntityManager {
     }
     spawnEntity(entity) {
         this.entityList.push(entity);
+        entity.onSpawned();
     }
     getEntityList() {
         return this.entityList;
@@ -16,13 +17,14 @@ class EntityManager {
             entityLag.addTime();
             if (entityLag.isReached()) {
                 let entity = entityLag.getEntity();
-                entity.setCoord(entityLag.getCoord());
+                //entity.setCoord(entityLag.getCoord());
                 this.spawnEntity(entity);
                 this.entityLagList.splice(i, 1);
             }
         });
         this.entityList.forEach((entity, i) => {
             entity.onUpdate();
+            entity.prevCoord = entity.coord.copy();
             if (entity.isDead) {
                 this.entityList.splice(i, 1);
             }

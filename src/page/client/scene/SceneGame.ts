@@ -16,7 +16,7 @@ import { Controller } from '../Controller';
 import { Entity } from '../../server/entity/Entity';
 import { EntityPlayer } from '../../server/entity/EntityPlayer';
 import { EntityBullet } from '../../server/entity/bullet/EntityBullet';
-import { BulletState } from '../../server/entity/bullet/BulletState';
+import { EnumBulletState } from '../../server/entity/bullet/EnumBulletState';
 export class SceneGame extends Scene {
     public canvas: HTMLCanvasElement;
     public particleManager: ParticleManager;
@@ -79,10 +79,10 @@ export class SceneGame extends Scene {
                 Shapes.CIRCLE.draw(entity.coord,new Color(256,256,256),entity.getMaxHP(),0,1,this.ctx)
             }else if(entity instanceof EntityBullet){
                 
-                if (entity.state!=BulletState.FADE){
-                    Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,1,this.ctx)
-                }else{
+                if (entity.state==EnumBulletState.FADE){
                     Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,entity.hp/entity.maxHp,this.ctx)
+                }else if(entity.state == EnumBulletState.NORMAL){
+                    Shapes.CIRCLE.draw(entity.coord,new Color(0,256,256),entity.getHP(),0,1,this.ctx)
                 }
             }
         });

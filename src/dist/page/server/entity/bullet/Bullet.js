@@ -24,13 +24,8 @@ class Bullet {
     spawn(entitymanager, coord, angle, spawntime) {
         let bullet = new EntityBullet_1.EntityBullet(entitymanager, this);
         bullet.physics.setSpeed(Coord_1.Coord.createFromAngle(angle, this.speed));
-        if (spawntime != 0) {
-            entitymanager.spawnEntityWithLag(bullet, spawntime, coord);
-        }
-        else {
-            bullet.setCoord(coord);
-            entitymanager.spawnEntity(bullet);
-        }
+        bullet.setCoord(coord.copy());
+        entitymanager.spawnEntityWithLag(bullet, spawntime, coord);
     }
     copy() {
         return new Bullet(this.maxTime, this.maxHp, this.speed);

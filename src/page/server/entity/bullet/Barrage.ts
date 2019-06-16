@@ -5,6 +5,7 @@ import { Bmodi } from './modification/BModi';
 import { Bullet } from './Bullet';
 import { PhysicsHelper } from '../PhysicsHelper';
 import { EntityManager } from '../../field/EntityManager';
+import * as console from 'console';
 export class Barrage implements IBullet{
     private base: IBullet;
     private amount: number;

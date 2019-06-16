@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const EntityLiving_1 = require("../EntityLiving");
 const PhysicsHelper_1 = require("../PhysicsHelper");
-const BulletState_1 = require("./BulletState");
+const EnumBulletState_1 = require("./EnumBulletState");
 class EntityBullet extends EntityLiving_1.EntityLiving {
     constructor(entityManager, bullet) {
         super(entityManager, bullet.getMaxHP());
@@ -16,10 +16,10 @@ class EntityBullet extends EntityLiving_1.EntityLiving {
     onUpdate() {
         super.onUpdate();
         this.time++;
-        if (this.time >= this.bullet.getMaxTime()) {
-            this.state = BulletState_1.BulletState.FADE;
+        if (this.state == EnumBulletState_1.EnumBulletState.NORMAL && this.time >= this.bullet.getMaxTime()) {
+            this.state = EnumBulletState_1.EnumBulletState.FADE;
         }
-        if (this.state == BulletState_1.BulletState.FADE) {
+        if (this.state == EnumBulletState_1.EnumBulletState.FADE) {
             this.hp -= this.maxHp * this.fadeHPRate;
             this.physics.speed.setLength(this.physics.speed.getLength() - this.bullet.getSpeed() * this.fadeSpeedRate);
         }
@@ -27,7 +27,7 @@ class EntityBullet extends EntityLiving_1.EntityLiving {
         this.physics.setTransitionToCoord(this.coord);
     }
     onSpawned() {
-        this.state = BulletState_1.BulletState.NORMAL;
+        this.state = EnumBulletState_1.EnumBulletState.NORMAL;
     }
 }
 exports.EntityBullet = EntityBullet;

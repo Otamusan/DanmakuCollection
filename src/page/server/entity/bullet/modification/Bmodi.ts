@@ -1,11 +1,9 @@
-import { ShapeCircle } from '../../../../client/shape/ShapeCircle';
 export class Bmodi{
     private maxTimeDifference:number;
     private speedDifference:number;
     private maxHPDifference:number;
     private angleDifference:number;
     private spawnTimeDifference:number;
-
     constructor(time:number,hp:number,speed:number,angle:number,spanwTime:number){
         this.maxTimeDifference = time;
         this.maxHPDifference = hp;

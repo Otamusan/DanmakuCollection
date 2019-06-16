@@ -10,6 +10,7 @@ export class EntityManager{
 
     public spawnEntity(entity:Entity){
         this.entityList.push(entity)
+        entity.onSpawned();
     }
 
     public getEntityList():Array<Entity>{
@@ -21,13 +22,14 @@ export class EntityManager{
             entityLag.addTime();
             if (entityLag.isReached()){
                 let entity = entityLag.getEntity()
-                entity.setCoord(entityLag.getCoord());
+                //entity.setCoord(entityLag.getCoord());
                 this.spawnEntity(entity)
                 this.entityLagList.splice(i,1);
             }
         });
         this.entityList.forEach((entity, i) => {
             entity.onUpdate();
+            entity.prevCoord=entity.coord.copy();
             if (entity.isDead) {
                 this.entityList.splice(i,1)
             }

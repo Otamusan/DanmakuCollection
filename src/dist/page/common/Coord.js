@@ -5,6 +5,9 @@ class Coord {
         this.x = x;
         this.y = y;
     }
+    isZero() {
+        return this.x == 0 && this.y == 0;
+    }
     static createFromRadian(rad, length) {
         let x = Math.cos(rad) * length;
         let y = Math.sin(rad) * length;
@@ -34,12 +37,22 @@ class Coord {
         return new Coord(this.x, this.y);
     }
     getUnitVector() {
-        return this.copy().divide(this.copy().getLength());
+        if (!this.isZero()) {
+            return this.copy().divide(this.copy().getLength());
+        }
+        else {
+            //throw new Error("This is a zero vector")
+        }
     }
     setLength(n) {
-        let coord = this.copy().getUnitVector().multiply(n);
-        this.x = coord.x;
-        this.y = coord.y;
+        if (!this.isZero()) {
+            let coord = this.copy().getUnitVector().multiply(n);
+            this.x = coord.x;
+            this.y = coord.y;
+        }
+        else {
+            //throw new Error("This is a zero vector")
+        }
         return this;
     }
     subtractCoord(other) {
